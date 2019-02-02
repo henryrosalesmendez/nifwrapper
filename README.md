@@ -8,8 +8,11 @@ If you want to create/visualizate NIF data see NIFify in [GitHub](https://github
 
 Install first the library:
 
+```
 pip install -i https://test.pypi.org/simple/ nifwrapper
+```
 
+and then, try:
 
 ```python
 from nifwrapper import *
