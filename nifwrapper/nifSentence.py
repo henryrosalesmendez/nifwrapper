@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 #------------------------------------------------------------------------------------------------------
-from nifAnnotation import NIFAnnotation
-from nifUtils import attr2nif, standarURI
+from .nifAnnotation import NIFAnnotation
+from .nifUtils import attr2nif, standarURI
 #------------------------------------------------------------------------------------------------------
 class NIFSentence:
     """

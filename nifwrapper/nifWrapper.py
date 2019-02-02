@@ -2,16 +2,13 @@
 # -*- coding: utf-8 -*-
 
 #------------------------------------------------------------------------------------------------------
-from nifDocument import NIFDocument
+from .nifDocument import NIFDocument
 
 #------------------------------------------------------------------------------------------------------
 class NIFWrapper:
     """
     Here, you can handle your NIF corpora. NIFWrapper is the class that will store the sets of document.
     """
-    #documents = []
-    #dictD = {}
-    #prefix = {} # {"nif":"http://...",  ...}
 
     def __init__(self):
         self.documents = []

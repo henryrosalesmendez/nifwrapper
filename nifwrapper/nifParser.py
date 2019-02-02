@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 #------------------------------------------------------------------------------------------------------
-from nifWrapper import NIFWrapper
-from nifAnnotation import NIFAnnotation
-from nifSentence import NIFSentence
-from nifDocument import NIFDocument
-from nifUtils import *
+from .nifWrapper import NIFWrapper
+from .nifAnnotation import NIFAnnotation
+from .nifSentence import NIFSentence
+from .nifDocument import NIFDocument
+from .nifUtils import *
 
 #------------------------------------------------------------------------------------------------------
 
@@ -499,38 +499,4 @@ class NIFParser:
         wrp.setPrefix(self.P)  
         #wrp.sorting()
         return wrp
-
-
-#filename = "/media/henry/Datos/Datasets/VoxEL/rVoxEL-en.ttl"
-#filename = "/media/henry/Datos/Datasets/dbpedia-spotlight-nif.ttl"
-#filename = "/media/henry/Datos/Datasets/BENGAL/bengal_current_datasets/B13_bengal_star_data_10_70+_sen.ttl"
-#filename = "/media/henry/Datos/ej2_bengal.ttl"
-filename = "/media/henry/Datos/Datasets/MINE/datasets_with_categories/2019_01_12_ACE2004-first20-noref.ttl"
-filein = open(filename,"r")
-t = "".join(filein.readlines())    
-filein.close()
-
-
-parser = NIFParser()
-wrp = parser.parser_turtle(t)
-print("======================")
-
-fout = open("salida.ttl","w")
-fout.write(wrp.toString())
-fout.close()
-
-#parser = NIFParser()
-#ppp = "nif:broaderContext <http://www.nytimes.com/2010/10/11/business/media/11privacy.html>"
-#print(parser.getParsePredicate_Object(ppp))
-
-
-'''
-#parser.parsePrefix("@prefix dbo: <http://dbpedia.org/ontology/> .")
-o = """
-itsrdf:taIdentRef [mnt:entityType mnt:Person] ;
-"""
-parser.parseDocument(dd)
-
-p = parser.newChunk(t,0,".")
-print(t[p[0]:p[1]])
-'''
+    

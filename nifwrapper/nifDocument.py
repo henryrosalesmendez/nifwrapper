@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 #------------------------------------------------------------------------------------------------------
-from nifSentence import NIFSentence
+from .nifSentence import NIFSentence
 import copy
-from nifUtils import attr2nif, standarURI, compare_ini_fin
+from .nifUtils import attr2nif, standarURI, compare_ini_fin
 #------------------------------------------------------------------------------------------------------
 
 class NIFDocument:
