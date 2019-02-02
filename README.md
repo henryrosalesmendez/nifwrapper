@@ -2,7 +2,7 @@
 
 The NLP Interchange Format (NIF) is a RDF/OWL-based format wich allows the spotting of words from text corpora and its metada such as part-of-speech tags, knowledge-base links, entity type, etc. Likewise other Python libraries (e.g., [pynif](https://github.com/wetneb/pynif)), this library transform NIF data to python classes in order to better proccessing this information. 
 
-If you want to create/visualizate NIF data see (NIFify)[https://github.com/henryrosalesmendez/NIFify_v2].
+If you want to create/visualizate NIF data see NIFify in [GitHub](https://github.com/henryrosalesmendez/NIFify_v2) or a [demo](https://users.dcc.uchile.cl/~hrosales/NIFify_v2.html).
 
 ## Example
 
