@@ -43,8 +43,8 @@ class NIFSentence:
             return self.getAttribute("nif:anchorOf")
         return res
     
-    def addAttribute(self,_name,_value,_type,_m):
-        if _name in _m:
+    def addAttribute(self,_name,_value,_type,_m = None):
+        if _m != None and _name in _m:
             _name = _m[_name]
         self.attr[_name] = {}
         self.attr[_name]["value"] = _value

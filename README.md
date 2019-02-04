@@ -18,91 +18,102 @@ and then, try:
 from nifwrapper import *
 
 
-t = '''
+gold_ttl = '''
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix nif: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
 @prefix itsrdf: <http://www.w3.org/2005/11/its/rdf#> .
 
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542>
-a nif:String , nif:Context  , nif:RFC5147String ;
-nif:isString """Unemployment in the EU at record low since 2008. According to the latest Eurostat figures the unemployment has hit its lowest rate since December 2008 for the second month in a row in June. According to the latest Eurostat findings, the unemployment in the EU was 7.7 percent in June 2017, the same rate as in May, and down from 8.6 percent in June 2016. The current rate is the lowest recorded in the EU since December 2008. The euro area seasonally-adjusted unemployment was 9.1 percent in June 2017, down from 9.2 percent in May 2017 and down from 10.1 percent in June 2016. This is the lowest rate recorded in the euro area since February 2009. Eurostat estimates that 18.725 million men and women in the EU28, of whom 14.718 million in the euro area, were unemployed in June 2017. Among the Member States, the lowest unemployment in June 2017 was recorded in the Czech Republic (2.9 percent), Germany (3.8 percent) and Malta (4.1percent). The highest unemployment were observed in Greece (21.7 percent in April 2017) and Spain (17.1 percent). Compared with a year ago, unemployment fell in all Member States for which data is comparable over time, except Estonia which showed an increase (from 6.5 percent in May 2016 to 6.9 percent in May 2017). The largest decreases were registered in Spain (from 19.9 percent to 17.1 percent) and Croatia (from 13.3 percent to 10.6 percent). As a comparison, in June 2017, the unemployment in the United States was 4.4 percent, up from 4.3 percent in May 2017 but down from 4.9 percent in June 2016. """^^xsd:string ;
-nif:beginIndex "0"^^xsd:nonNegativeInteger ;
-nif:endIndex "1542"^^xsd:nonNegativeInteger ;
-nif:sourceUrl <http://www.voxeurop.eu/en/2017/social-issues-5121271> .
+<https://example.org/doc1>
+        a nif:String , nif:Context  , nif:RFC5147String ;
+        nif:isString """Kiev is an important industrial, scientific, educational and cultural center of Eastern Europe."""^^xsd:string ;
+        nif:beginIndex "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex "95"^^xsd:nonNegativeInteger ;
+        nif:sourceUrl <https://example.org/doc1> .
 
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,48>
-a nif:String , nif:Context , nif:RFC5147String ;
-nif:isString """Unemployment in the EU at record low since 2008."""^^xsd:string ;
-nif:beginIndex "0"^^xsd:nonNegativeInteger ;
-nif:endIndex "48"^^xsd:nonNegativeInteger ;
-nif:broaderContext <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542> .
+<https://example.org/doc1#char=0,95>
+        a nif:String , nif:Context , nif:RFC5147String ;
+        nif:isString """Kiev is an important industrial, scientific, educational and cultural center of Eastern Europe."""^^xsd:string ;
+        nif:beginIndex "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex "95"^^xsd:nonNegativeInteger ;
+        nif:broaderContext <https://example.org/doc1> .
 
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,12>
-a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
-nif:referenceContext <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,48> ;
-nif:Context <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542> ;
-nif:anchorOf """Unemployment"""^^xsd:string ;
-nif:beginIndex "0"^^xsd:nonNegativeInteger ;
-nif:endIndex "12"^^xsd:nonNegativeInteger ;
-itsrdf:taIdentRef <https://en.wikipedia.org/wiki/Unemployment> .
+<https://example.org/doc1#char=0,4>
+        a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
+        nif:referenceContext <https://example.org/doc1#char=0,95> ;
+        nif:context <https://example.org/doc1> ;
+        nif:anchorOf """Kiev"""^^xsd:string ;
+        nif:beginIndex "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex "4"^^xsd:nonNegativeInteger ;
+        itsrdf:taIdentRef <https://en.wikipedia.org/wiki/Kiev> .
 
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=20,22>
-a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
-nif:referenceContext <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,48> ;
-nif:Context <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542> ;
-nif:anchorOf """EU"""^^xsd:string ;
-nif:beginIndex "20"^^xsd:nonNegativeInteger ;
-nif:endIndex "22"^^xsd:nonNegativeInteger ;
-itsrdf:taIdentRef <https://en.wikipedia.org/wiki/European_Union> .
+<https://example.org/doc1#char=33,43>
+        a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
+        nif:referenceContext <https://example.org/doc1#char=0,95> ;
+        nif:context <https://example.org/doc1> ;
+        nif:anchorOf """scientific"""^^xsd:string ;
+        nif:beginIndex "33"^^xsd:nonNegativeInteger ;
+        nif:endIndex "43"^^xsd:nonNegativeInteger ;
+        itsrdf:taIdentRef <https://en.wikipedia.org/wiki/Education> .
 
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=43,47>
-a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
-nif:referenceContext <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,48> ;
-nif:Context <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542> ;
-nif:anchorOf """2008"""^^xsd:string ;
-nif:beginIndex "43"^^xsd:nonNegativeInteger ;
-nif:endIndex "47"^^xsd:nonNegativeInteger ;
-itsrdf:taIdentRef <https://en.wikipedia.org/wiki/2008> .
+<https://example.org/doc1#char=45,56>
+        a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
+        nif:referenceContext <https://example.org/doc1#char=0,95> ;
+        nif:context <https://example.org/doc1> ;
+        nif:anchorOf """educational"""^^xsd:string ;
+        nif:beginIndex "45"^^xsd:nonNegativeInteger ;
+        nif:endIndex "56"^^xsd:nonNegativeInteger ;
+        itsrdf:taIdentRef <https://en.wikipedia.org/wiki/Education> .
 
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=49,189>
-a nif:String , nif:Context , nif:RFC5147String ;
-nif:isString """According to the latest Eurostat figures the unemployment has hit its lowest rate since December 2008 for the second month in a row in June."""^^xsd:string ;
-nif:beginIndex "49"^^xsd:nonNegativeInteger ;
-nif:endIndex "189"^^xsd:nonNegativeInteger ;
-nif:broaderContext <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542> .
-
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=24,32>
-a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
-nif:referenceContext <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=49,189> ;
-nif:Context <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542> ;
-nif:anchorOf """Eurostat"""^^xsd:string ;
-nif:beginIndex "24"^^xsd:nonNegativeInteger ;
-nif:endIndex "32"^^xsd:nonNegativeInteger ;
-itsrdf:taIdentRef <https://en.wikipedia.org/wiki/Eurostat> .
-
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=45,57>
-a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
-nif:referenceContext <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=49,189> ;
-nif:Context <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542> ;
-nif:anchorOf """unemployment"""^^xsd:string ;
-nif:beginIndex "45"^^xsd:nonNegativeInteger ;
-nif:endIndex "57"^^xsd:nonNegativeInteger ;
-itsrdf:taIdentRef <https://en.wikipedia.org/wiki/Unemployment> .
-
-<http://www.voxeurop.eu/en/2017/social-issues-5121271#char=88,96>
-a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
-nif:referenceContext <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=49,189> ;
-nif:Context <http://www.voxeurop.eu/en/2017/social-issues-5121271#char=0,1542> ;
-nif:anchorOf """December"""^^xsd:string ;
-nif:beginIndex "88"^^xsd:nonNegativeInteger ;
-nif:endIndex "96"^^xsd:nonNegativeInteger ;
-itsrdf:taIdentRef <https://en.wikipedia.org/wiki/December> .
+<https://example.org/doc1#char=80,94>
+        a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;
+        nif:referenceContext <https://example.org/doc1#char=0,95> ;
+        nif:context <https://example.org/doc1> ;
+        nif:anchorOf """Eastern Europe"""^^xsd:string ;
+        nif:beginIndex "80"^^xsd:nonNegativeInteger ;
+        nif:endIndex "94"^^xsd:nonNegativeInteger ;
+        itsrdf:taIdentRef <https://en.wikipedia.org/wiki/Eastern_Europe> .
 '''
 
-
+## ---- parsing
 parser = NIFParser()
-wrp = parser.parser_turtle(t)
-print(wrp.toString())
+wrp_gold = parser.parser_turtle(gold_ttl)
+
+## ---- displaying turtle format
+print(wrp_gold.toString()) 
+
+## --- Benchmark
+
+# - inline NIF corpus creation
+wrp_sys = NIFWrapper()
+doc = NIFDocument("https://example.org/doc1")
+#--
+sent = NIFSentence("https://example.org/doc1#char=0,95")
+sent.addAttribute("nif:isString","Kiev is an important industrial, scientific, educational and cultural center of Eastern Europe.","xsd:string")
+sent.addAttribute("nif:broaderContext",["https://example.org/doc1"],"URI LIST")
+
+#-- 
+a1 = NIFAnnotation("https://example.org/doc1#char=0,4", "0", "4", ["https://en.wikipedia.org/wiki/Kiev"], ["dbo:Place"])
+a1.addAttribute("nif:anchorOf","Kiev","xsd:string")
+a1.addAttribute("ex:newPredicate","This is a test","xsd:string")
+sent.pushAnnotation(a1)
+
+#--
+a2 = NIFAnnotation("https://example.org/doc1#char=45,56", "45", "56", ["https://en.wikipedia.org/wiki/University"], ["dbo:Organization"])
+a2.addAttribute("nif:anchorOf","educational","xsd:string")
+sent.pushAnnotation(a2)
+
+#--
+a3 = NIFAnnotation("https://example.org/doc1#char=80,94", "80", "94", ["https://en.wikipedia.org/wiki/Eastern_Europe"], ["dbo:Organization"])
+a3.addAttribute("nif:anchorOf","Eastern Europe","xsd:string")
+sent.pushAnnotation(a3)
+#--
+doc.pushSentence(sent)
+wrp_sys.pushDocument(doc)
+
+
+## Quality Evaluation
+bmk = NIFBenchmark(wrp_sys, wrp_gold)
+print(bmk.microF())
 ```
 

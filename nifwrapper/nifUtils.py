@@ -14,10 +14,15 @@ def toDict(obj):
     L = obj["attr"]
     d = {}
     for l in L:
-        d[l[0]] = {
-            "value" : l[1],
-            "type" : l[2]
-            }
+        if not l[0] in d:
+            d[l[0]] = {
+                "value" : l[1],
+                "type" : l[2]
+                }
+        elif l[2] == "URI LIST":
+            #print("here",l,d[l[0]]["value"])
+            #print("type:",type(d[l[0]]["value"]), type(l[1]))
+            d[l[0]]["value"] = d[l[0]]["value"] + l[1]
     return d
 
 
