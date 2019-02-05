@@ -19,10 +19,9 @@ def toDict(obj):
                 "value" : l[1],
                 "type" : l[2]
                 }
-        elif l[2] == "URI LIST":
-            #print("here",l,d[l[0]]["value"])
-            #print("type:",type(d[l[0]]["value"]), type(l[1]))
+        elif (l[0] in d) and (l[2] == "URI LIST") and (d[l[0]]["type"] == "URI LIST"):
             d[l[0]]["value"] = d[l[0]]["value"] + l[1]
+
     return d
 
 

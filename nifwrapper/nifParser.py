@@ -305,7 +305,8 @@ class NIFParser:
             if triple.find("@prefix") == 0:
                 self.parsePrefix(triple)
             elif triple.find("nif:sourceUrl") != -1:
-                #print("DOCUMENT ===================================")
+                ##print("DOCUMENT ===================================")
+                #print(triple)
                 doc = self.parseTriple(triple)
                 #print("---------\n",doc)
                 if doc["uri"] in self.D:
@@ -318,6 +319,7 @@ class NIFParser:
             #elif triple.find("nif:Phrase") != -1  or  triple.find("anchorOf") != -1:
             elif triple.find("itsrdf:taIdentRef") != -1:
                 #print("ANNOTATION ===================================")
+                #print(triple)
                 ann = self.parseTriple(triple)
                 #print("---------\n",ann)
                 if ann["uri"] in self.A:
@@ -327,12 +329,14 @@ class NIFParser:
             
             elif triple.find("mnt:entityType") != -1:
                 #print("ENTITY TYPE ===================================")
+                #print(triple)
                 etype_uri = self.getParsedListUri(triple)
                 if etype_uri != None:
                     self.ET[etype_uri[0]] = triple.split("mnt:entityType")[1].strip(" \t\r\n")
 
             else:
                 #print("SENTENCE ===================================")
+                #print(triple)
                 sent = self.parseTriple(triple)
                 if sent["uri"] in self.S:
                     print("[Error] The document "+sent["uri"]+" is duplucated.")
@@ -344,7 +348,9 @@ class NIFParser:
 
 
     #------------
-    def newChunk(self,_text, _pos, _mark = "."): #Searching the next chunk
+    def newChunk(self,_text, _pos, _mark = None): #Searching the next chunk
+        if _mark == None:
+            _mark = ";"
         state = -1
         nText = len(_text)
         tt = _text
@@ -407,6 +413,11 @@ class NIFParser:
                 
             elif state == 16: # rt "
                 if ch == '"':
+                    state = 0
+                
+            
+            elif state == 20: # rt ]
+                if ch == "]":
                     state = 0
                 
             p = p + 1
