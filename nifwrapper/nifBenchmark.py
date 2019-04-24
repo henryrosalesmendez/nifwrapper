@@ -12,6 +12,8 @@ from .nifParser import NIFParser
 class NIFBenchmark:
     
     def __init__(self, _system=None, _gold=None): 
+        self.onlyER = False
+        self.showWarnings = True
         if _system != None:
             self.setSystemResult(_system)
         
@@ -35,30 +37,33 @@ class NIFBenchmark:
         for i in range(len(A)):
             a = A[i]
             
-            #print("/////")
-            #print(a.getAttribute("nif:anchorOf"),": ",a.getUrlList())
-            #print(x.getAttribute("nif:anchorOf"),": ",x.getUrlList())
-            #print("....................> interseccion:",set(a.getUrlList()).intersection(set(x.getUrlList())) )
-            #print("\\\\\\\\")
-            
-            if ((a.getIni() == x.getIni()) and (a.getFin() == x.getFin()) and 
-               (set(a.getUrlList()).intersection(set(x.getUrlList()))!=set([]))):
-                
+            if self.onlyER == True:
+                if ((a.getIni() == x.getIni()) and (a.getFin() == x.getFin())):    
+                    return i
+            elif ((a.getIni() == x.getIni()) and (a.getFin() == x.getFin()) and 
+               (set(a.getUrlShortList()).intersection(set(x.getUrlShortList()))!=set([]))):    
                 return i
         return -1
     
+    def trim(self, uri):
+        return uri.split("#")[0]
     
     def contingenceTableByDocument(self): 
         T = []
+        
+        #tempDictD = dict([(self.trim(k),v) for k,v in self.system.dictD.items()])
+        #tempDictS = dict([(self.trim(k),v) for k,v in self.system.dictD.items()])
+        
         for doc_gold in self.gold.documents:
-            #print("-->doc_gold.uri:",doc_gold.uri)
             if doc_gold.uri in self.system.dictD:
                 doc_sys = self.system.documents[self.system.dictD[doc_gold.uri]]
+                ####doc_sys = self.system.documents[tempDictS[self.trim(doc_gold.uri)]]
                 ctt = self.contingenceTableBySentence(doc_gold, doc_sys)
-                #print("tp:",len(ctt["tp"]), "fp:",len(ctt["fp"]), "fn:",len(ctt["fn"]))
                 T.append(ctt)
             else:
-                print("[Error] document <"+doc_gold.uri+"> is not covered in the system results")
+                if self.showWarnings == True:
+                    print("[Error] document <"+doc_gold.uri+"> is not covered in the system results")
+
         
         return T
     
@@ -76,7 +81,8 @@ class NIFBenchmark:
                 fp = fp + cont["fp"]
                 fn = fn + cont["fn"]
             else:
-                print("[Error] document <"+sent_gold.uri+"> is not covered in the system results")
+                if self.showWarnings == True:
+                    print("[Error] sentence <"+sent_gold.uri+"> is not covered in the system results")
         return {"tp":tp,"fp":fp, "fn":fn}
     
     def contingenceTable(self, s_gold, s_syst):
@@ -100,9 +106,11 @@ class NIFBenchmark:
     #----
     
     def P(self,tp,fp,fn):
+        if tp + fp == 0: return 0
         return (tp/(tp + fp))
         
     def R(self,tp,fp,fn):
+        if tp + fn == 0: return 0
         return (tp/(tp + fn))
     
     def F1(self,p,r):
@@ -117,34 +125,55 @@ class NIFBenchmark:
         
         for t in T:
             #print("t:",T)
+            #for o in t["tp"]:
+            #    print(o.getAttribute("nif:anchorOf"))
             tp = tp + len(t["tp"])
             fp = fp + len(t["fp"])
             fn = fn + len(t["fn"])
-        #print(tp,fp,fn)
+        #print("_______________>",tp,fp,fn)
         p = self.P(tp,fp,fn)
         r = self.R(tp,fp,fn)
         f1 = self.F1(p,r)
-        return {"precision":p, "recall":r, "f1":f1}
+        return {"precision":p, "recall":r, "f1":f1}#, "tp":T}
     
 
     #------
     # 'm' is the membership function, e.g., m = {"http://ex.org/ann1":0.2, ...}
     def sum_m(self,st,m):
-        summ = 0
-        
+        summ = 0        
         for s in st:
             uri = s.uri
+            
             if uri in m:
                 summ = summ + m[uri]
                 #print("=>",s.getAttribute("nif:anchorOf"),m[uri])
             else:
                 summ = summ + 1
-                print("[Error] No membership specification for annotation <"+uri+">")
+                #print("--->m:",m)
+                if self.showWarnings == True:
+                    print("[Error] No membership specification for annotation <"+uri+">")
         #print("summ:",summ)
         return summ
-            
+    
+    
+    #------
+    # the membership values are stores in the field "membership"
+    def sum_attr(self,st):
+        summ = 0
         
-    def microFEL(self, m):
+        for a in st:
+            uri = a.uri
+            if "el:membership" in a.attr:
+                summ = summ + float(a.getAttribute("el:membership"))
+                #print("=>",a.getAttribute("nif:anchorOf"),m[uri])
+            else:
+                summ = summ + 1
+                if self.showWarnings == True:
+                    print("[Error] No membership specification for annotation <"+uri+">")
+        return summ
+            
+    '''    
+    def microExtF1(self, m=None):
         T = self.contingenceTableByDocument()
         tp = 0
         fp = 0
@@ -155,14 +184,66 @@ class NIFBenchmark:
             #print("tp:",[x.getLabel() for x in t["tp"]])
             #print("fp:",[x.getLabel() for x in t["fp"]])
             #print("fn:",[x.getLabel() for x in t["fn"]])
-            s_tp = self.sum_m(t["tp"],m)
+            if m == None:
+                s_tp = self.sum_attr(t["tp"])
+            else:
+                s_tp = self.sum_m(t["tp"],m)
             #print("---> self.sum_m(t['tp'],m):",s_tp)
             tp = tp + s_tp
             fp = fp + len(t["fp"])#self.sum_m(t["fp"],m)
             fn = fn + len(t["fn"])#self.sum_m(t["fn"],m)
-        #print("(tp,fp,fn):",(tp,fp,fn))
+        print("(tp,fp,fn):",(tp,fp,fn))
         p = self.P(tp,fp,fn)
         r = self.R(tp,fp,fn)
+        f1 = self.F1(p,r)
+        return {"precision":p, "recall":r, "f1":f1}
+    '''
+    
+    
+    def sumatoryA(self,A,m):
+        if m == None and self.showWarnings == True:
+            print("[WARNING] membership function is empty")
+        
+        R_ = 0
+        for doc_g in A.documents:
+            for sentence_g in doc_g.sentences:
+                for ann_g in sentence_g.annotations:
+                    if m == None:
+                        if "el:membership" in ann_g.attr:
+                            R_ = R_ + 1#float(ann_g.getAttribute("el:membership"))
+                        else:
+                            R_ = R_ + 1
+                    elif ann_g.uri in m:
+                        R_ = R_ + m[ann_g.uri]
+                        #print("=>",ann_g.getAttribute("nif:anchorOf"),m[ann_g.uri])
+                    
+        return R_
+            
+    
+    def microExtF1(self, m=None):
+        T = self.contingenceTableByDocument()
+        tp = 0
+        fp = 0
+        fn = 0
+        
+        for t in T:
+            if m == None:
+                s_tp = self.sum_attr(t["tp"])
+            else:
+                s_tp = self.sum_m(t["tp"],m)
+            tp = tp + s_tp
+
+        sp = tp
+        p = 0
+        S = self.system.getCantAnnotations()
+        if S != 0 and sp!=0:
+            p = sp/S
+        
+        r = 0
+        R = self.sumatoryA(self.gold,m)
+        if R != 0 and sp!=0:
+            r = sp/R
+            
         f1 = self.F1(p,r)
         return {"precision":p, "recall":r, "f1":f1}
     

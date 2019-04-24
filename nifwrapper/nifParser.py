@@ -7,7 +7,7 @@ from .nifAnnotation import NIFAnnotation
 from .nifSentence import NIFSentence
 from .nifDocument import NIFDocument
 from .nifUtils import *
-
+from random import randint
 #------------------------------------------------------------------------------------------------------
 
 class NIFParser:
@@ -19,6 +19,11 @@ class NIFParser:
         self.P = {} # prefix
         self.ET= {} # entity type    
         self.iddoc = 0
+        self.showWarnings = True
+        self.avoidR = False
+        #self.avoidDuplicatedAnnotations = False # Its happen when two annotations of the same document but in the different sentences have same ini and fin position
+
+
 
     #------------
     def parser(text, _format = "turtle"):
@@ -30,15 +35,16 @@ class NIFParser:
     def parser_turtle(self,text):      
         pos = 0
         nText = len(text)
-        
         while pos < nText:
             res = self.newChunk(text, pos,".")
             res[1] = res[1] + 1
             chunk = text[res[0]:res[1]].strip(" \n\r\t")
+            #print("-----------")
+            #print(chunk)
             if len(chunk) != 0:
                 self.mainTripleParser(chunk)            
             pos = res[1]+1
-        
+
         wrp = self.createIntance()
         return wrp
     
@@ -79,7 +85,8 @@ class NIFParser:
             self.P[nameP] = listURI[0]
         except:
             #print(sys.exc_info()[0])
-            print("[Error] trying to store @prefix")
+            if (self.showWarnings == True):
+                print("[Error] trying to store @prefix")
     
     #------------
     def getParsePredicate_Object(self,text):
@@ -89,6 +96,7 @@ class NIFParser:
         
         predicate = ""
         value = None
+        ptype = ""
         L = []
         v  = ""
         t = ""
@@ -229,7 +237,7 @@ class NIFParser:
                 if Space(ch):
                     pass
                 elif ch == "^":
-                    state == 101
+                    state = 101
                 else:
                     return [predicate,v,"xsd:string"]
             elif state == 101:
@@ -266,6 +274,10 @@ class NIFParser:
         
         [pini,pfin] = self.newChunk(_triple,0,";")
         pfin = pfin + 1
+        #print("-------------")
+        #print("_triple:",_triple)
+        #print("==>",_triple[pini:pfin])
+        #print("......")
         uri = self.getParsedListUri(_triple[pini:pfin])[0]
         
         AttrList = []
@@ -283,7 +295,6 @@ class NIFParser:
                 #print(_triple[pini:pfin])
                 
                 L = self.getParsePredicate_Object(_triple[pini:pfin])
-                #print("-->",L)
                 if L != None:
                     AttrList.append(L)
                     #print("---->",L)
@@ -304,13 +315,16 @@ class NIFParser:
         if len(triple)!=0:
             if triple.find("@prefix") == 0:
                 self.parsePrefix(triple)
+            
             elif triple.find("nif:sourceUrl") != -1:
-                ##print("DOCUMENT ===================================")
+                #print("DOCUMENT ===================================")
                 #print(triple)
+
                 doc = self.parseTriple(triple)
                 #print("---------\n",doc)
                 if doc["uri"] in self.D:
-                    print("[Error] The document "+doc["uri"]+" is duplucated.")
+                    if (self.showWarnings == True):
+                        print("[Error] The document "+doc["uri"]+" is duplucated.")
                 else:
                     doc["index"] = self.iddoc
                     self.iddoc = self.iddoc + 1                    
@@ -320,12 +334,25 @@ class NIFParser:
             elif triple.find("itsrdf:taIdentRef") != -1:
                 #print("ANNOTATION ===================================")
                 #print(triple)
+                
                 ann = self.parseTriple(triple)
-                #print("---------\n",ann)
                 if ann["uri"] in self.A:
-                    print("[Error] The document "+ann["uri"]+" is duplucated.")
+                    if (self.showWarnings == True):
+                        print("[Error] The annotation "+ann["uri"]+" is duplucated.")
+                    if (self.avoidR == False):
+                        cc = 1
+                        
+                        if ann["uri"] in self.A:
+                            while (ann["uri"] + ";" + str(cc)) in self.A:
+                                cc = cc + 1
+                            ann["uri"] = ann["uri"] + ";" + str(cc)
+                        else:
+                            ann["uri"] = ann["uri"] + ";" + str(cc)
+                        
+                        self.A[ann["uri"]] = toDict(ann)
                 else:
                     self.A[ann["uri"]] = toDict(ann)
+                
             
             elif triple.find("mnt:entityType") != -1:
                 #print("ENTITY TYPE ===================================")
@@ -337,13 +364,16 @@ class NIFParser:
             else:
                 #print("SENTENCE ===================================")
                 #print(triple)
+                
                 sent = self.parseTriple(triple)
                 if sent["uri"] in self.S:
-                    print("[Error] The document "+sent["uri"]+" is duplucated.")
+                    if (self.showWarnings == True):
+                        print("[Error] The document "+sent["uri"]+" is duplucated.")
                 else:
                     self.S[sent["uri"]] = toDict(sent)
-                    #print("///////////\n",toDict(sent))
+
             
+                
             
 
 
@@ -375,7 +405,7 @@ class NIFParser:
                     state = 20
                 elif ch == _mark:
                     return [pIni,p];
-                
+
             elif state == 1:
                 if ch == ">":
                     state = 0
@@ -437,7 +467,6 @@ class NIFParser:
     def createIntance(self):
         wrp = NIFWrapper()
         
-        
         for uridoc in self.D:
             doc = self.D[uridoc]
             _doc = NIFDocument(uridoc)
@@ -446,6 +475,7 @@ class NIFParser:
                 sent = self.S[urisent]
                 _sent = NIFSentence(urisent)
                 
+                #print(sent)
                 urid = None
                 _ms = {"nif:anchorOf":"nif:isString"}
                 if "nif:broaderContext" in sent:
@@ -475,33 +505,38 @@ class NIFParser:
                                         _ann.addAttribute(key,ann[key]["value"],ann[key]["type"],_m)
                                     _sent.pushAnnotation(_ann)
                             else:
-                                print("[Error] Annotation with a not valid link to a Sentence")
+                                if (self.showWarnings == True):
+                                    print("[Error] Annotation with a not valid link to a Sentence")
+                        sKeys = set([])
+                        for key in sent:
+                            sKeys.add(key)
+                            #print("==> sent:",key,sent[key]["value"],sent[key]["type"])
+                            _sent.addAttribute(key,sent[key]["value"],sent[key]["type"],_ms)
+                        
+                        #---  searching missing nif:beginIndex and nif:endIndex predicates
+                        if not "nif:beginIndex" in sKeys:
+                            ini = getIniFromUri(urisent)
+                            if ini!=None:
+                                _sent.addAttribute("nif:beginIndex",ini,"xsd:nonNegativeInteger")
+                            else:
+                                if (self.showWarnings == True):
+                                    print("[Error] Imposible to locate predicate nif:beginIndex in <"+urisent+">")
+                                
+                        if not "nif:endIndex" in sKeys:
+                            fin = getFinFromUri(urisent)
+                            if fin!=None:
+                                _sent.addAttribute("nif:endIndex",fin,"xsd:nonNegativeInteger")
+                            else:
+                                if (self.showWarnings == True):
+                                    print("[Error] Imposible to locate predicate nif:nif:endIndex in <"+urisent+">")
+                                
+                        _doc.pushSentence(_sent)
+                        del _sent
                 else:
-                    print("[Error] Sentence without document uri specification")
+                    if (self.showWarnings == True):
+                        print("[Error] Sentence without document uri specification")
                 
-                sKeys = set([])
-                for key in sent:
-                    sKeys.add(key)
-                    #print("==> sent:",key,sent[key]["value"],sent[key]["type"])
-                    _sent.addAttribute(key,sent[key]["value"],sent[key]["type"],_ms)
                 
-                #---  searching missing nif:beginIndex and nif:endIndex predicates
-                if not "nif:beginIndex" in sKeys:
-                    ini = getIniFromUri(urisent)
-                    if ini!=None:
-                        _sent.addAttribute("nif:beginIndex",ini,"xsd:nonNegativeInteger")
-                    else:
-                        print("[Error] Imposible to locate predicate nif:beginIndex in <"+urisent+">")
-                        
-                if not "nif:endIndex" in sKeys:
-                    fin = getFinFromUri(urisent)
-                    if fin!=None:
-                        _sent.addAttribute("nif:endIndex",fin,"xsd:nonNegativeInteger")
-                    else:
-                        print("[Error] Imposible to locate predicate nif:nif:endIndex in <"+urisent+">")
-                        
-                _doc.pushSentence(_sent)
-                del _sent
             
             for key in doc:
                 _doc.addAttribute(key,doc[key]["value"],doc[key]["type"])
@@ -511,3 +546,4 @@ class NIFParser:
         #wrp.sorting()
         return wrp
     
+

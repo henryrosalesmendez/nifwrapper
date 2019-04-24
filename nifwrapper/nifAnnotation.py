@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
     
 #------------------------------------------------------------------------------------------------------
-from .nifUtils import standarURI, attr2nif
+from .nifUtils import standarURI, attr2nif, uriShort
 #------------------------------------------------------------------------------------------------------
 class NIFAnnotation:
     """
@@ -37,7 +37,7 @@ class NIFAnnotation:
         return None
     
     def getUri(self):
-        return self.uri;        
+        return self.uri;
         
     def getIni(self):
         return self.getAttribute("nif:beginIndex");
@@ -48,8 +48,12 @@ class NIFAnnotation:
     def getUrlList(self):
         return self.getAttribute("itsrdf:taIdentRef");
     
+    def getUrlShortList(self):
+        L = self.getAttribute("itsrdf:taIdentRef")
+        return [uriShort(x) for x in L]
+    
     def getTagList(self):
-        return self.getAttribute("itsrdf:taClassRef");
+        return self.getAttribute("itsrdf:taClassRef")
     
     def toString(self):
         ini = self.getIni()

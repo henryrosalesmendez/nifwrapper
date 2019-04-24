@@ -40,6 +40,8 @@ def attr2nif(attr,except_set):
                 if a["value"][0].find("nif:Phrase") != -1:
                     continue
                 s = s + '        %s %s ;\n'%(key,", ".join(a["value"]))
+            elif a["type"] == "xsd:nonNegativeInteger":
+                s = s + '        %s "%s"^^%s ;\n'%(key,a["value"],a["type"])
             else:
                 s = s + '        %s """%s"""^^%s ;\n'%(key,a["value"],a["type"])
     
@@ -96,5 +98,9 @@ def compare_ini_fin(o1,o2):
 cmp_ = functools.cmp_to_key(compare_ini_fin)
 
 
-
+def uriShort(t):
+    L = t.split("/")
+    if len(L) != 0:
+        return L[-1]
+    return t
 

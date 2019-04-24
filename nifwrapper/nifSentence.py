@@ -55,6 +55,15 @@ class NIFSentence:
             return self.attr[_name]["value"]
         return None
     
+    def findByPosition(self, pini, pfin):
+        po = 0
+        for a in self.annotations:
+            if (a.getIni() == pini and a.getFin() == pfin):
+                return po
+            po = po + 1
+        return -1
+    
+    
     def sorting(self):    
         #sorted_list = sorted(self.annotations, cmp = compare_ini_fin)
         #annotations = sorted_list
@@ -84,9 +93,10 @@ class NIFSentence:
         #print(self.attr)
         #print("..........")
         #input("entonces?")
-        
+        #print("self.dictA:",self.dictA)
         for idann in self.dictA:
             index = self.dictA[idann]
+            #print("-->",idann,index)
             s = s + self.annotations[index].toString()
             s = s + "\n"
         return s

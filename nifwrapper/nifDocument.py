@@ -39,9 +39,17 @@ class NIFDocument:
             return self.attr[_name]["value"]
         return None
     
-    def getSortedIndexSentences(self):
-        print(self.dictS)
-        return []
+    def findByPosition(self, pini, pfin):
+        po = 0
+        for s in self.sentences:
+            if (s.getIni() == pini and s.getFin() == pfin):
+                return po
+            po = po + 1
+        return -1
+    
+    #def getSortedIndexSentences(self):
+    #    print(self.dictS)
+    #    return []
     
     def getText(self):
         txt = ""
