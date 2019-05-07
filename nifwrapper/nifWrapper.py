@@ -313,6 +313,47 @@ class NIFWrapper:
     
     
     
+    # We keep only those annotation that are also in wrp_
+    def KeepOnlyAnnotationsOf(self,wrp_):
+        
+        for di in range(len(self.documents)):
+            d = self.documents[di]       
+            
+            _b_d = d.uri in wrp_.dictD
+            pd = -1
+            
+            if (_b_d):
+                pd = wrp_.dictD[d.uri]
+            else:
+                print("[WARNING] Document <%s> is not contained in the passed object"%(d.uri))
+                
+            for si in range(len(d.sentences)):
+                s = d.sentences[si]
+                tempA = []
+                tempDictA = {}
+                pos_ = 0
+                #print("===========")
+                #print("Sent Uri -> ",s.uri)
+                
+                ps = wrp_.documents[pd].findByPosition(s.getIni(), s.getFin())
+                _b_s = (ps != -1)
+                
+                for ai in range(len(s.annotations)):
+                    a = s.annotations[ai]
+                    
+                    if (_b_s): 
+                        #print(":)")
+                        pa = wrp_.documents[pd].sentences[ps].findByPosition(a.getIni(), a.getFin())
+                        if pa!=-1:
+                            tempA.append(a)
+                            tempDictA[a.uri] = pos_
+                            pos_ = pos_ + 1    
+                            
+                                
+                self.documents[di].sentences[si].annotations = [x for x in tempA]
+                self.documents[di].sentences[si].dictA = tempDictA
+    
+    
     
     def toString(self):
         s = ""
@@ -327,5 +368,19 @@ class NIFWrapper:
         
         return s
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

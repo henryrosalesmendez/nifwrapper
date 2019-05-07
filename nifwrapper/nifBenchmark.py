@@ -219,7 +219,7 @@ class NIFBenchmark:
                     
         return R_
             
-    
+    '''
     def microExtF1(self, m=None):
         T = self.contingenceTableByDocument()
         tp = 0
@@ -243,6 +243,40 @@ class NIFBenchmark:
         R = self.sumatoryA(self.gold,m)
         if R != 0 and sp!=0:
             r = sp/R
+            
+        f1 = self.F1(p,r)
+        return {"precision":p, "recall":r, "f1":f1}
+    '''
+    
+    
+    def microExtF1(self, m=None):
+        T = self.contingenceTableByDocument()
+        tp = 0
+        fp = 0
+        fn = 0
+        
+        tp_hard = 0
+        for t in T:
+            if m == None:
+                s_tp = self.sum_attr(t["tp"])
+            else:
+                s_tp = self.sum_m(t["tp"],m)
+            tp_hard = tp_hard + len(t["tp"])
+            tp = tp + s_tp
+
+        #sp = tp
+        sp = tp_hard
+        p = 0
+        S = self.system.getCantAnnotations()
+        if S != 0 and sp!=0:
+            #p = sp/S
+            p = tp_hard/S
+        
+        r = 0
+        R = self.sumatoryA(self.gold,m)
+        if R != 0 and sp!=0:
+            #r = sp/R
+            r = tp/R
             
         f1 = self.F1(p,r)
         return {"precision":p, "recall":r, "f1":f1}
