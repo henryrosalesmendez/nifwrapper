@@ -208,12 +208,18 @@ class NIFBenchmark:
         for doc_g in A.documents:
             for sentence_g in doc_g.sentences:
                 for ann_g in sentence_g.annotations:
+                    #print("-----")
+                    #print("->",ann_g.getAttribute("nif:anchorOf"))
                     if m == None:
+                        #print("--None--")
                         if "el:membership" in ann_g.attr:
-                            R_ = R_ + 1#float(ann_g.getAttribute("el:membership"))
+                            #print("SIII")
+                            R_ = R_ + float(ann_g.getAttribute("el:membership"))
                         else:
+                            #print("NOOO")
                             R_ = R_ + 1
                     elif ann_g.uri in m:
+                        #print("tiene m = ",m[ann_g.uri])
                         R_ = R_ + m[ann_g.uri]
                         #print("=>",ann_g.getAttribute("nif:anchorOf"),m[ann_g.uri])
                     
@@ -271,12 +277,19 @@ class NIFBenchmark:
         if S != 0 and sp!=0:
             #p = sp/S
             p = tp_hard/S
+        #print("===========")
+        #print("hard tp:",tp_hard)
+        #print("S:",S)
+        #print("Precisoin:",p)
         
         r = 0
         R = self.sumatoryA(self.gold,m)
         if R != 0 and sp!=0:
             #r = sp/R
             r = tp/R
+        #print("soft_tp:",tp)
+        #print("Gold:",R)
+        #print("Recall:",r)
             
         f1 = self.F1(p,r)
         return {"precision":p, "recall":r, "f1":f1}
