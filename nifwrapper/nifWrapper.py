@@ -193,20 +193,24 @@ class NIFWrapper:
                     a_.uri = a.uri
                     if ("itsrdf:taClassRef" in a_.attr):
                         avg_ = 0
+                        LAvg = []
                         cn = 0
                         for tag in a_.attr["itsrdf:taClassRef"]["value"]:
                             if tag == "tax:Ambiguous": continue
                             cn = cn + 1
                             if tag in mcat:
-                                avg_ = avg_ + mcat[tag]                                
+                                avg_ = avg_ + mcat[tag]  
+                                LAvg.append(mcat[tag]  )
                                     
                             else:
                                 avg_ = avg_ + 1
                                 print("[ERROR] the tag '"+tag+"' is not contained in the Map-Degree mapping")
                                 input("???")
                         avg_ = avg_/cn
+                        val_ = min(LAvg)
                         #print("=>",a_.getAttribute("nif:anchorOf"),"  avg:",avg_)
-                        a_.addAttribute("el:membership",str(round(avg_,3)),"xsd:nonNegativeInteger")
+                        ####a_.addAttribute("el:membership",str(round(avg_,3)),"xsd:nonNegativeInteger")
+                        a_.addAttribute("el:membership",str(round(val_,3)),"xsd:nonNegativeInteger")
                     tempA.append(a_)
                         
                 self.documents[di].sentences[si].annotations = [x for x in tempA]
@@ -240,8 +244,8 @@ class NIFWrapper:
                         #update membership
                         if (("el:membership" in a.attr) and ("el:membership" in tempA[pp].attr)):
                             #av = (float(tempA[pp].attr["el:membership"]["value"])  +  float(a.attr["el:membership"]["value"])  )/2
-                            
-                            av = min(float(tempA[pp].attr["el:membership"]["value"]), float(a.attr["el:membership"]["value"]))
+                            #OJOOOO---------- cambiamos aqui al maximo
+                            av = max(float(tempA[pp].attr["el:membership"]["value"]), float(a.attr["el:membership"]["value"]))
                             tempA[pp].attr["el:membership"]["value"] = str(av)
                             
 
