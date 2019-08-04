@@ -89,6 +89,31 @@ class NIFDocument:
             s = s + "\n"
             
         return s
-        
+    
+    
+    
+    # Annotation where are stored with the start/end positions according to their sentences. 
+    # A dictionary D = {(pos_initial, post_end):"label", ...} is returned in this method containing all the 
+    # annotation of this document
+    def getAnnotationDict(self, targetTag=None):
+        D = {}
+        for idsent in self.dictS:
+            sent_ = self.sentences[self.dictS[idsent]]
+            sent_ini = int(sent_.getIni())
+            sent_fin = int(sent_.getFin())
+
+            for idann in sent_.dictA:
+                ann_ = sent_.annotations[sent_.dictA[idann]]
+                if targetTag:
+                    if "itsrdf:taClassRef" in ann_.attr  and  not targetTag in set(ann_.attr["itsrdf:taClassRef"]["value"]):
+                        continue
+
+                p = tuple([sent_ini + int(ann_.getIni()), sent_ini + int(ann_.getFin())])
+                if not p in D:
+                    D[p] = ann_.getAttribute("nif:anchorOf")
+
+                
+        return D
+                
     
         
