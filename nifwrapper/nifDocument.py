@@ -18,6 +18,7 @@ class NIFDocument:
         self.sentences = []
         self.dictS = {}
         self.attr = {}
+        self.addAlwaysPositionsToUriInSentence = True
         
     def setUri(self, _uri):
         self.uri = _uri
@@ -42,7 +43,7 @@ class NIFDocument:
     def findByPosition(self, pini, pfin):
         po = 0
         for s in self.sentences:
-            if (s.getIni() == pini and s.getFin() == pfin):
+            if (int(s.getIni()) == int(pini) and int(s.getFin()) == int(pfin)):
                 return po
             po = po + 1
         return -1
@@ -85,6 +86,7 @@ class NIFDocument:
         
         for idsent in self.dictS:
             index = self.dictS[idsent]
+            self.sentences[index].addAlwaysPositionsToUriInSentence = self.addAlwaysPositionsToUriInSentence
             s = s + self.sentences[index].toString()
             s = s + "\n"
             
@@ -114,6 +116,8 @@ class NIFDocument:
 
                 
         return D
-                
+    
+    
+    
     
         

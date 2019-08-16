@@ -17,6 +17,7 @@ class NIFSentence:
         self.annotations = []
         self.dictA = {}    
         self.attr = {}
+        self.addAlwaysPositionsToUriInSentence = True
     
     def setText(self, _text):
         self.addAttribute("nif:isString",_text,"xsd:string")
@@ -34,6 +35,14 @@ class NIFSentence:
         return self.uri
         
     def pushAnnotation(self,_ann):
+        
+        if not "nif:context" in _ann.attr and "nif:broaderContext" in self.attr:
+            _ann.addAttribute("nif:context",self.getAttribute("nif:broaderContext"),"URI LIST")
+        
+        if not "nif:referenceContext" in _ann.attr:
+            _ann.addAttribute("nif:referenceContext",[self.getUri()],"URI LIST")
+        
+        
         self.dictA[_ann.getUri()] = len(self.annotations)
         self.annotations.append(_ann)
     
@@ -58,7 +67,7 @@ class NIFSentence:
     def findByPosition(self, pini, pfin):
         po = 0
         for a in self.annotations:
-            if (a.getIni() == pini and a.getFin() == pfin):
+            if (int(a.getIni()) == int(pini) and int(a.getFin()) == int(pfin)):
                 return po
             po = po + 1
         return -1
@@ -85,7 +94,10 @@ class NIFSentence:
             print("[Error]: Sentence <"+self.uri+"> with out ini/fin predicate")
             return ""
         
-        s = standarURI(self.uri, ini, fin) + "\n        a nif:String , nif:Context  , nif:RFC5147String ;\n"
+        s = ""
+        if self.addAlwaysPositionsToUriInSentence:
+            s = standarURI(self.uri, ini, fin) + "\n        a nif:String , nif:Context  , nif:RFC5147String ;\n"
+        else: s = "<"+self.uri+">" + "\n        a nif:String , nif:Context  , nif:RFC5147String ;\n"
         s = s + attr2nif(self.attr, set([]))
         s = s + "\n"
         
@@ -94,10 +106,22 @@ class NIFSentence:
         #print("..........")
         #input("entonces?")
         #print("self.dictA:",self.dictA)
+        
+        #print("self.attr:",self.attr)
+        #print("--->",self.attr["nif:broaderContext"])
+        #input(";)")
+        
+        passValues = {"nif:referenceContext":{"value":[self.uri], 'type': 'URI LIST'}}
+        if self.addAlwaysPositionsToUriInSentence:
+            passValues = {"nif:referenceContext":{"value":[standarURI(self.uri, ini, fin).strip("<>")], 'type': 'URI LIST'}}
+            
+        if "nif:broaderContext" in self.attr:            
+            passValues["nif:context"] = self.attr["nif:broaderContext"]
+
         for idann in self.dictA:
             index = self.dictA[idann]
             #print("-->",idann,index)
-            s = s + self.annotations[index].toString()
+            s = s + self.annotations[index].toString(passValues)
             s = s + "\n"
         return s
         

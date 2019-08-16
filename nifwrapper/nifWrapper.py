@@ -4,7 +4,7 @@
 #------------------------------------------------------------------------------------------------------
 from .nifDocument import NIFDocument
 from .nifAnnotation import NIFAnnotation
-
+import re
 #------------------------------------------------------------------------------------------------------
 class NIFWrapper:
     """
@@ -15,6 +15,7 @@ class NIFWrapper:
         self.documents = []
         self.dictD = {}
         self.prefix = {}
+        self.addAlwaysPositionsToUriInSentence = True
         
     def getCantAnnotations(self):
         _cant = 0        
@@ -367,6 +368,7 @@ class NIFWrapper:
         
         
         for d in self.documents:
+            d.addAlwaysPositionsToUriInSentence = self.addAlwaysPositionsToUriInSentence
             s = s + d.toString()
             s = s + "\n"
         
@@ -374,15 +376,240 @@ class NIFWrapper:
     
 
 
+    #
+    # For a Given document and position. Here we return the sentences that contain this position inside.
+    def findSentencesInDocumentByAnyPosition(self,docuri,pos):
+        
+        _b_d = docuri in self.dictD
+        pd = -1
+        
+        if (_b_d):
+            pd = self.dictD[docuri]
+        else:
+            print("[WARNING -findSentencesInDocumentByAnyPosition-] Document <%s> is not contained in the passed object"%(docuri))
+            
+        d = self.documents[pd]
+        for si in range(len(d.sentences)):
+            s = d.sentences[si]
+            
+            # is this the sentence of this annotation?
+            if ((si == 0 and pos < int(s.getFin())) or 
+            (si == len(d.sentences)-1  and pos >= int(s.getIni())) or 
+            (pos >= int(s.getIni()) and pos < int(s.getFin()))):
+                
+                return si
+        return -1
 
 
+    # Extending the annotations of this document with coreferences. 
+    #
+    # Suppose we have the sentence:
+    #    "[[Barack Obama]] was the president of the [[USA]]. He was the best of them." 
+    # where 'Barack Obama' and 'USA' have been annotated by a EL system. We passed as parameter the Coreference-Resolution
+    # system output of this sentence, for example, the followings:
+    #
+    # I) He -> Barack Obama
+    # II) them -> president
+    #
+    # Due to we know the corresponding KB entity of "Barack Obama", we link "He" with it. However, the EL system does'nt
+    # find any annotation for "president", so, we exclude "them" of the final annotations.
+    #
+    # The prameter with the coreference information looks like:
+    #    CorefL = [{'start': 31, 'end': 34, 'text': 'him', 'resolved': 'a dog', 
+    #               'fullInformation': [{'start': 14, 'end': 19, 'text': 'a dog'}]} ...]
+    
+    
+    def extendsDocWithCoref(self, CorefL, docuri):
+         for coref in CorefL:
+            #print("------------------------\n")
+            #print("-->",coref)
 
+            _b_d = docuri in self.dictD
+            pd = -1
+            
+            if (_b_d):
+                pd = self.dictD[docuri]
+            else:
+                print("[WARNING] Document <%s> is not contained in the passed object"%(docuri))
+                
+            d = self.documents[pd]
+            text = d.getText()
+            
+            
+            # --- step 1. Finding if one of the chain references is already annotated 
+            L = []
+            if "fullInformation" in coref:
+                # Great. I have a list of possible mentions with start/end positions
+                for e in coref["fullInformation"]:
+                    L.append({
+                        "ini": e["start"],
+                        "fin": e["end"],
+                        "label": e["text"]
+                        })
+                
+            else:
+                # Saddly, I will see the ocurrences of the resolved reference in the text,
+                # and see if one of they is already annotated 
+                overall = 0
+                text = text
+                
+                re_expresion = coref["resolved"]
+                re_expresion = re_expresion.replace("(","\(")
+                re_expresion = re_expresion.replace(")","\(")
+                re_expresion = re_expresion.replace("[","\[")
+                re_expresion = re_expresion.replace("]","\]")
 
+                
+                
+                
+                print("--------")
+                #print("text_r:",text_r)
+                
+                p = re.compile("[ \n\t\r.,:;'!?\"'\(\)\{\}\[\]]"+re_expresion+"[ \n\t\r.,:;'!?\"\(\)\{\}\[\]]")
+                for m in p.finditer(text):
+                    m_start = m.start()+1
+                    #print(m_start, m.group(),"-->|",text[m_start:])
+                    L.append({
+                        "ini": m_start,
+                        "fin": m_start + len(coref["resolved"]),
+                        "label": coref["resolved"]
+                        })
+                
+                #input("okk??")
+                '''
+                print("==> text:",text)
+                while True:
+                    pos = text[overall:].find(coref["resolved"])
+                    print("-> pos:",pos)
+                    if pos != -1:                       
+                        L.append({
+                        "ini": overall + pos,
+                        "fin": overall + pos + len(coref["resolved"]),
+                        "label": coref["resolved"]
+                        })
+                        print("L:",L)
+                        overall = overall + pos + len(coref["resolved"])
+                        print("overall:",overall)
+                        print("text[overall:]:",text[overall:])
+                    else: break
+                '''
 
+            #print("Final L:",L) 
+            #input("conforme?")
+            # --- step 2
+            for l in L:
+                _ini = l["ini"]
+                _fin = l["fin"]
+                _label = l["label"]
+                
+                #print("_ini:",_ini)
+                #print("_fin:",_fin)
+                #print("_label:",_label)
+                
+                pcoref = self.findSentencesInDocumentByAnyPosition(docuri, coref["start"])
+                presolv = self.findSentencesInDocumentByAnyPosition(docuri, _ini)
+                
+                #print("pcoref:",pcoref)
+                #print("presolv:",presolv)
+                
+                if pcoref!=-1 and presolv !=-1:
+                    
+                    s_coref = d.sentences[pcoref]
+                    s_resolv = d.sentences[presolv]
+                    
+                    #print('00000000> oref["start"] - int(s_coref.getIni()):', coref["start"] - int(s_coref.getIni()))
+                    #print('00000000> coref["end"] - int(s_coref.getIni()):', coref["end"] - int(s_coref.getIni()))
+                    p_a_coref = s_coref.findByPosition(coref["start"] - int(s_coref.getIni()), coref["end"] - int(s_coref.getIni()))
+                    p_a_resolv = s_resolv.findByPosition(_ini - int(s_resolv.getIni()), _fin - int(s_resolv.getIni()))
+                    #print('8888888> _ini - int(s_resolv.getIni()):',_ini - int(s_resolv.getIni()))
+                    #print('8888888> _fin - int(s_resolv.getIni()):', _fin - int(s_resolv.getIni()))
+                    
+                    #print("==> p_a_coref:",p_a_coref)
+                    #print("==> p_a_resolv:", p_a_resolv)
+                    
+                    if p_a_coref == -1 and p_a_resolv != -1:
+                        
+                        ini_ = int(coref["start"]) - int(s_coref.getIni())
+                        fin_ = int(coref["end"]) - int(s_coref.getIni())
+                        label_ = s_coref.getText()[ini_:fin_]
+                        
+                        #print("ini_:",ini_)
+                        #print("fin_:",fin_)
+                        #print("label_:",label_)
+                        
+                        aURI = s_resolv.getUri() + "#char="+str(ini_)+","+str(fin_)
+                        a = s_resolv.annotations[p_a_resolv]
+                        
+                        ann = NIFAnnotation(aURI, ini_, fin_, a.getAttribute("itsrdf:taIdentRef"))
+                        ann.addAttribute("nif:anchorOf",label_,"xsd:string")
+                        ann.addAttribute("nif:beginIndex",str(ini_),"xsd:nonNegativeInteger")
+                        ann.addAttribute("nif:endIndex",str(fin_),"xsd:nonNegativeInteger")
+                        self.documents[pd].sentences[pcoref].pushAnnotation(ann)
+                        break
+                        
+                
 
-
-
-
+                """
+                found = False
+                for si in range(len(d.sentences)):
+                    s = d.sentences[si]
+                    
+                    print("===============\n","==> sentence:",s.getText())
+                    print("==> s.getIni()",s.getIni())
+                    
+                    # is this the sentence of this annotation?
+                    if ((si == 0 and _ini < int(s.getFin())) or 
+                    (si == len(d.sentences)-1  and _ini >= int(s.getIni())) or 
+                    (_ini >= int(s.getIni()) and _ini < int(s.getFin()))):
+                        
+                        _ini_ = _ini - int(s.getIni())
+                        _fin_ = _fin - int(s.getIni())
+                        _label_ = s.getText()[_ini_:_fin_]
+                        
+                        print("_ini_:",_ini_)
+                        print("_fin_:",_fin_)
+                        print("_label_:",_label_)
+                        
+                        if _label != _label_:
+                            print("[WARNING] %s is different to the [start:end] position (%s) in the sentence."%(_label,_label_))
+                        
+                        print("-->",'coref["start"]:',coref["start"])
+                        print("-->",'coref["end"]:',coref["end"])
+                        pa = s.findByPosition(coref["start"], coref["end"])
+                """
+                
+                """
+                        print("---> PA:",pa)
+                        input("ok=)")
+                        if pa == -1: 
+                            ini_ = int(coref["start"]) - int(s.getIni())
+                            fin_ = int(coref["end"]) - int(s.getIni())
+                            label_ = s.getText()[ini_:fin_]
+                            
+                            print("ini_:",ini_)
+                            print("fin_:",fin_)
+                            print("label_:",label_)
+                            
+                            
+                            aURI = s.getUri() + "#char="+str(ini_)+","+str(fin_)
+                            a = s.annotations[pa]
+                            
+                            print("a.attr:",a.attr)
+                            input("OKKK???")
+                            
+                            ann = NIFAnnotation(aURI, ini_, fin_, a.getAttribute("itsrdf:taIdentRef"))
+                            ann.addAttribute("nif:anchorOf",label_,"xsd:string")
+                            ann.addAttribute("nif:beginIndex",str(ini_),"xsd:nonNegativeInteger")
+                            ann.addAttribute("nif:endIndex",str(fin_),"xsd:nonNegativeInteger")
+                            self.documents[pd].sentences[si].pushAnnotation(ann)
+                            found = True
+                            print("HEREEE", ann.toString())
+                            break;
+                    
+                if found: break;
+                """
+                        
+                            
 
 
 

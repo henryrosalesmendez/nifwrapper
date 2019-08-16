@@ -25,25 +25,29 @@ def toDict(obj):
     return d
 
 
-def attr2nif(attr,except_set):
+def attr2nif(attr,except_set, passedValues=None):
     s = ""
     #print("except_set:",except_set)
     for key in attr:
         a = attr[key]
+        a_value = a["value"]
+        
+        if passedValues and key in passedValues:
+            a_value = passedValues[key]["value"]
         #print("=>",a)
         if not key in except_set:
             if a["type"] == "BN":
-                s = s + '        %s [%s] ;\n'%(key,a["value"])
+                s = s + '        %s [%s] ;\n'%(key,a_value)
             elif a["type"] == "URI LIST":
-                s = s + '        %s %s ;\n'%(key,", ".join(["<"+x+">" for x in a["value"]]))
+                s = s + '        %s %s ;\n'%(key,", ".join(["<"+x+">" for x in a_value]))
             elif a["type"] == "TAG LIST":
-                if a["value"][0].find("nif:Phrase") != -1:
+                if a_value[0].find("nif:Phrase") != -1:
                     continue
-                s = s + '        %s %s ;\n'%(key,", ".join(a["value"]))
+                s = s + '        %s %s ;\n'%(key,", ".join(a_value))
             elif a["type"] == "xsd:nonNegativeInteger":
-                s = s + '        %s "%s"^^%s ;\n'%(key,a["value"],a["type"])
+                s = s + '        %s "%s"^^%s ;\n'%(key,a_value,a["type"])
             else:
-                s = s + '        %s """%s"""^^%s ;\n'%(key,a["value"],a["type"])
+                s = s + '        %s """%s"""^^%s ;\n'%(key,a_value,a["type"])
     
     
     return s[:len(s)-2] +  ".\n"

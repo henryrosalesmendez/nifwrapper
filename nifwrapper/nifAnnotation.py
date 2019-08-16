@@ -55,7 +55,7 @@ class NIFAnnotation:
     def getTagList(self):
         return self.getAttribute("itsrdf:taClassRef")
     
-    def toString(self):
+    def toString(self, passedValues = None):
         ini = self.getIni()
         fin = self.getFin()
         
@@ -64,7 +64,7 @@ class NIFAnnotation:
             return ""
         
         s = standarURI(self.uri, ini, fin) + "\n        a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;\n"   
-        s = s + attr2nif(self.attr, set([]))
+        s = s + attr2nif(self.attr, set([]), passedValues)
         
         return s
 
