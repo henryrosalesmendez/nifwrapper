@@ -1,5 +1,4 @@
 """A setuptools based setup module.
-
 See:
 https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
@@ -43,7 +42,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.5.1',  # Required
+    version='1.5.2',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -194,9 +193,19 @@ setup(
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
     project_urls={  # Optional
-        'Bug Reports': 'https://github.com/pypa/sampleproject/issues',
-        'Funding': 'https://donate.pypi.org',
-        'Say Thanks!': 'http://saythanks.io/to/example',
-        'Source': 'https://github.com/pypa/sampleproject/',
+        'Bug Reports': 'https://github.com/henryrosalesmendez/nifwrapper/issues',
+        'Funding': 'https://github.com/henryrosalesmendez/nifwrapper',
+        'Say Thanks!': 'https://github.com/henryrosalesmendez/nifwrapper',
+        'Source': 'https://github.com/henryrosalesmendez/nifwrapper',
     },
 )
+    
+'''
+-------------------------
+   - python3 -m pip install --user --upgrade setuptools wheel
+   - python3 setup.py sdist bdist_wheel
+   - python3 -m pip install --user --upgrade twine
+   - python3 -m twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+      > Enter username and password
+------------------------------
+'''

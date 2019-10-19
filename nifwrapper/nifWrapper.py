@@ -458,6 +458,11 @@ class NIFWrapper:
                 re_expresion = re_expresion.replace(")","\(")
                 re_expresion = re_expresion.replace("[","\[")
                 re_expresion = re_expresion.replace("]","\]")
+
+                
+                
+                
+                print("--------")
                 
                 p = re.compile("[ \n\t\r.,:;'!?\"'\(\)\{\}\[\]]"+re_expresion+"[ \n\t\r.,:;'!?\"\(\)\{\}\[\]]")
                 for m in p.finditer(text):
@@ -468,6 +473,7 @@ class NIFWrapper:
                         "label": coref["resolved"]
                         })
                 
+    
             # --- step 2
             for l in L:
                 _ini = l["ini"]
@@ -476,7 +482,6 @@ class NIFWrapper:
                 
                 pcoref = self.findSentencesInDocumentByAnyPosition(docuri, coref["start"])
                 presolv = self.findSentencesInDocumentByAnyPosition(docuri, _ini)
-                
                 
                 if pcoref!=-1 and presolv !=-1:
                     
@@ -501,9 +506,8 @@ class NIFWrapper:
                         ann.addAttribute("nif:endIndex",str(fin_),"xsd:nonNegativeInteger")
                         self.documents[pd].sentences[pcoref].pushAnnotation(ann)
                         break
-                        
-                       
-    
+                            
+
     #
     # Here, I return a list of all the position of the annotation by each sentence, and each document
     # E.g., [("hrrp://doc1.com", "http://doc1/sentence1.com", 1,3, sister), ....]
@@ -517,6 +521,163 @@ class NIFWrapper:
                     a = s.annotations[ai]
                     L.append(tuple([d.uri, s.uri, a.getIni(), a.getFin(), a.getAttribute("nif:anchorOf")]))
         return L
+    
+    
+    # Extending the annotations of this document with WSD. 
+    #
+    # Suppose we have the sentence:
+    #    "Barack Obama was the president of the USA. He was the best of them." 
+    # where 'Barack Obama' and 'USA' have been annotated by a EL system. We passed as parameter the Coreference-Resolution
+    # system output of this sentence, for example, the followings:
+    #
+    # I) He -> Barack Obama
+    # II) them -> president
+    #
+    # Due to we know the corresponding KB entity of "Barack Obama", we link "He" with it. However, the EL system does'nt
+    # find any annotation for "president", so, we exclude "them" of the final annotations.
+    #
+    # The prameter with the coreference information looks like:
+    #    WSDL = [{'start': 38, 'end': 41, 'label': 'USA', 'link': 'United_States_Army'} .... ]
+    
+    
+    def extendsDocWithWSD(self, WSDL, docuri): 
+         for wsd in WSDL:
+            _b_d = docuri in self.dictD
+            pd = -1
+            
+            if (_b_d):
+                pd = self.dictD[docuri]
+            else:
+                print("[WARNING] Document <%s> is not contained in the passed object"%(docuri))
+                
+            d = self.documents[pd]
+            text = d.getText()
+            
+            
+         
+            # --- step 2
+
+            
+            pwsd = self.findSentencesInDocumentByAnyPosition(docuri, wsd["start"])
+            
+            if pwsd!=-1:
+                
+                s_wsd = d.sentences[pwsd]
+                p_a = s_wsd.findByPosition(wsd["start"] - int(s_wsd.getIni()), wsd["end"] - int(s_wsd.getIni()))
+
+                
+                if p_a == -1:                    
+                    ini_ = int(wsd["start"]) - int(s_wsd.getIni())
+                    fin_ = int(wsd["end"]) - int(s_wsd.getIni())
+                    label_ = s_wsd.getText()[ini_:fin_]
+                    
+                    aURI = s_wsd.getUri() + "#char="+str(ini_)+","+str(fin_)#+";1"
+                    
+                    ann = NIFAnnotation(aURI, ini_, fin_, [wsd["link"]])
+                    ann.addAttribute("nif:anchorOf",label_,"xsd:string")
+                    ann.addAttribute("nif:beginIndex",str(ini_),"xsd:nonNegativeInteger")
+                    ann.addAttribute("nif:endIndex",str(fin_),"xsd:nonNegativeInteger")
+                    self.documents[pd].sentences[pwsd].pushAnnotation(ann)
+                    
+                    
+                    
+    ##
+    #  The idea here is to recieve as input other NifWrapper. This wrapper should be the same as this, but, with 
+    #  more annotaitons. This function take those annotations that are not in the current wrapper but are in the
+    #  passed wrapper as a parameter.
+    #
+    def mergeWrapper(self, wrp_):
+        
+        for di in range(len(wrp_.documents)):
+            d = wrp_.documents[di]           
+            
+            _b_d = d.uri in self.dictD
+            pd = -1
+            
+            if (_b_d):
+                pd = self.dictD[d.uri]
+            else:
+                print("[WARNING] Document <%s> is not contained in the passed object"%(d.uri))
+            
+            for si in range(len(d.sentences)):
+                s = d.sentences[si]
+                
+                ps = self.documents[pd].findByPosition(s.getIni(), s.getFin())
+                _b_s = (ps != -1)
+                
+                
+                for ai in range(len(s.annotations)):
+                    a = s.annotations[ai]
+                    
+                    if (_b_s): 
+                        a_ini = a.getIni()
+                        a_fin = a.getFin()
+                        
+                        
+                        
+                        pa = self.documents[pd].sentences[ps].findByPosition(a_ini, a_fin)
+                        if pa == -1:      
+                            
+                            
+                            
+                            ini_ = int(a_ini)
+                            fin_ = int(a_fin)
+                            tt = s.getText()
+                            
+                            label_ = tt[ini_:fin_]
+                            
+                            aURI = s.getUri() + "#char="+str(ini_)+","+str(fin_)
+                            
+                            ann = NIFAnnotation(aURI, ini_, fin_, a.getAttribute("itsrdf:taIdentRef"))
+                            ann.addAttribute("nif:anchorOf",label_,"xsd:string")
+                            ann.addAttribute("nif:beginIndex",str(ini_),"xsd:nonNegativeInteger")
+                            ann.addAttribute("nif:endIndex",str(fin_),"xsd:nonNegativeInteger")
+                            self.documents[pd].sentences[ps].pushAnnotation(ann)
+    
+        
+        
+    
+    
+    #
+    #  This function keeps only in the wrapper the first ocurrence of each pair-link. For example
+    #  Suppose that we have the following sentence:
+    #
+    #                                                                 ---> wiki:Obama
+    #                                                                | 
+    #  input:  [Barack Obama] and [Michelle Obama] are [married]. [Barack Obama] is a good man.
+    #  -----          |                 |                  |
+    #                  --> wiki:Obama    --> wiki:Obama     --> wiki:marriage
+    # 
+    #
+    #  output: [Barack Obama] and [Michelle Obama] are [married]. [Barack Obama] is a good man.
+    #  ------         |                 |                  |
+    #                  --> wiki:Obama    --> wiki:Obama     --> wiki:marriage
+    #
+    #
+    def keep_only_first_annotation_link(self):
+        S = set([])
+        for di in range(len(self.documents)):
+            d = self.documents[di]
+            for si in range(len(d.sentences)):
+                s = d.sentences[si]
+                tempA = []
+                tempDictA = {}
+                pos_ = 0
+                for a in s.annotations:
+                    key = "-".join([a.attr["nif:anchorOf"]["value"]]+a.getUrlList())
+                    #print("key:",key)
+                    if not key in S:
+                        S.update([key])
+                        tempA.append(a)
+                        tempDictA[a.uri] = pos_
+                        pos_ = pos_ + 1
+                    else:
+                        key = a.uri
+                        del self.documents[di].sentences[si].dictA[key]
+                        
+                self.documents[di].sentences[si].annotations = [x for x in tempA]
+                self.documents[di].sentences[si].dictA = tempDictA
+        
 
 
 
