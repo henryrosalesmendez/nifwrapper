@@ -90,7 +90,7 @@ class NIFSentence:
         ini = self.getIni()
         fin = self.getFin()
         
-        if not ini or not fin:
+        if ini==None or fin==None:
             print("[Error]: Sentence <"+self.uri+"> with out ini/fin predicate")
             return ""
         
@@ -100,17 +100,7 @@ class NIFSentence:
         else: s = "<"+self.uri+">" + "\n        a nif:String , nif:Context  , nif:RFC5147String ;\n"
         s = s + attr2nif(self.attr, set([]))
         s = s + "\n"
-        
-        #print("---------")
-        #print(self.attr)
-        #print("..........")
-        #input("entonces?")
-        #print("self.dictA:",self.dictA)
-        
-        #print("self.attr:",self.attr)
-        #print("--->",self.attr["nif:broaderContext"])
-        #input(";)")
-        
+                
         passValues = {"nif:referenceContext":{"value":[self.uri], 'type': 'URI LIST'}}
         if self.addAlwaysPositionsToUriInSentence:
             passValues = {"nif:referenceContext":{"value":[standarURI(self.uri, ini, fin).strip("<>")], 'type': 'URI LIST'}}
@@ -120,7 +110,6 @@ class NIFSentence:
 
         for idann in self.dictA:
             index = self.dictA[idann]
-            #print("-->",idann,index)
             s = s + self.annotations[index].toString(passValues)
             s = s + "\n"
         return s
