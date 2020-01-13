@@ -41,7 +41,7 @@ def attr2nif(attr,except_set, passedValues=None):
             elif a["type"] == "URI LIST":
                 s = s + '        %s %s ;\n'%(key,", ".join(["<"+x+">" for x in a_value]))
             elif a["type"] == "TAG LIST":
-                if a_value[0].find("nif:Phrase") != -1:
+                if a_value == None or a_value == [] or a_value[0].find("nif:Phrase") != -1:
                     continue
                 s = s + '        %s %s ;\n'%(key,", ".join(a_value))
             elif a["type"] == "xsd:nonNegativeInteger":
