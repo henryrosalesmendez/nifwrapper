@@ -77,6 +77,10 @@ class NIFDocument:
     
     
     def toString(self):
+        
+        if self.getAttribute("nif:sourceUrl") == None:
+            self.addAttribute("nif:sourceUrl", [self.uri], "URI LIST");
+        
         text = self.getText()
         ntext = len(text) 
         s =     standarURI(self.uri, 0, ntext) + "\n        a nif:String , nif:Context  , nif:RFC5147String ;\n"
