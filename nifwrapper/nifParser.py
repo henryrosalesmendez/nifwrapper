@@ -331,7 +331,7 @@ class NIFParser:
                     self.D[doc["uri"]] = toDict(doc)
                     
             #elif triple.find("nif:Phrase") != -1  or  triple.find("anchorOf") != -1:
-            elif triple.find("itsrdf:taIdentRef") != -1:
+            elif triple.find("itsrdf:taIdentRef") != -1 or triple.find("nif:Phrase")!= -1:
                 #print("ANNOTATION ===================================")
                 #print(triple)
                 
@@ -475,7 +475,7 @@ class NIFParser:
                 sent = self.S[urisent]
                 _sent = NIFSentence(urisent)
                 
-                #print(sent)
+                #print("sent:",sent)
                 urid = None
                 _ms = {"nif:anchorOf":"nif:isString"}
                 if "nif:broaderContext" in sent:
@@ -484,8 +484,9 @@ class NIFParser:
                     urid = sent["nif:referenceContext"]["value"][0]
                     _ms["nif:referenceContext"] = "nif:broaderContext"
                     
-                if urid != None:                    
-                    if uridoc == urid:
+                if urid != None:  
+                    #if uridoc == urid:
+                    if uridoc.split("#")[0] == urid.split("#")[0]:
                         for uriann in self.A:
                             ann = self.A[uriann]
 

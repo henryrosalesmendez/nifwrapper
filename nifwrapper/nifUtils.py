@@ -34,12 +34,16 @@ def attr2nif(attr,except_set, passedValues=None):
         
         if passedValues and key in passedValues:
             a_value = passedValues[key]["value"]
-        #print("=>",a)
+        #print(key,"=>",a)
         if not key in except_set:
             if a["type"] == "BN":
                 s = s + '        %s [%s] ;\n'%(key,a_value)
             elif a["type"] == "URI LIST":
-                s = s + '        %s %s ;\n'%(key,", ".join(["<"+x+">" for x in a_value]))
+                if key in ['nif:context', 'nif:broaderContext'] and "nif:beginIndex" in attr and "nif:endIndex" in attr:
+                    ini = attr["nif:beginIndex"]["value"]
+                    fin = attr["nif:endIndex"]["value"]
+                    s = s + '        %s %s ;\n'%(key,", ".join(["<"+standarURI(x, ini, fin)+">" for x in a_value]))
+                else: s = s + '        %s %s ;\n'%(key,", ".join(["<"+x+">" for x in a_value]))
             elif a["type"] == "TAG LIST":
                 if a_value == None or a_value == [] or a_value[0].find("nif:Phrase") != -1:
                     continue
