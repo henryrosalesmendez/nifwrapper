@@ -1,5 +1,5 @@
 name = "nifwrapper"
-__version__ = "1.5.7"
+__version__ = "1.5.8"
 
 from .nifWrapper import NIFWrapper
 from .nifAnnotation import NIFAnnotation

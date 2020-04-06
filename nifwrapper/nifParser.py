@@ -313,12 +313,11 @@ class NIFParser:
                 pini = res[0]
                 pfin = res[1]+1
                 
-                print(_triple[pini:pfin])
+                #print(_triple[pini:pfin])
                 
                 L = self.getParsePredicate_Object(_triple[pini:pfin])
                 if L != None:
                     AttrList.append(L)
-                    print("---->",L)
 
                 pos = pfin + 1
                 while pos < len(_triple) and Space(_triple[pos]):

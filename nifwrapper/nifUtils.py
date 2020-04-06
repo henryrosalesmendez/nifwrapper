@@ -30,7 +30,6 @@ def attr2nif(attr,except_set, passedValues=None):
         passedValues = {}
         
     s = ""
-    #print("except_set:",except_set)
     for key in attr:
         a = attr[key]
         a_value = a["value"]
@@ -42,12 +41,7 @@ def attr2nif(attr,except_set, passedValues=None):
             if a["type"] == "BN":
                 s = s + '        %s [%s] ;\n'%(key,a_value)
             elif a["type"] == "URI LIST":
-                if key in ['nif:context', 'nif:broaderContext'] and "docFin" in passedValues and "uridoc" in passedValues:
-                    
-                    print("-----------")
-                    print(passedValues["uridoc"],"-->",standarURI(passedValues["uridoc"], 0, passedValues["docFin"]))
-                    input("??")
-                    print("............")
+                if key in ['nif:context', 'nif:broaderContext'] and "docFin" in passedValues and "uridoc" in passedValues:                    
                     s = s + '        %s %s ;\n'%(key,", ".join([  standarURI(passedValues["uridoc"], 0, passedValues["docFin"]) for x in a_value]))
                 elif key == 'nif:referenceContext' and "sentIni" in attr and "sentFin" in passedValues:
                     s = s + '        %s %s ;\n'%(key,", ".join([  standarURI(x, passedValues["sentIni"], passedValues["sentFin"]) for x in a_value]))
