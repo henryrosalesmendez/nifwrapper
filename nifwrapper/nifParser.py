@@ -130,6 +130,8 @@ class NIFParser:
                     state = 20
                 elif ch == "[":
                     state = 30
+                elif ch == "(":
+                    state = 60
                 else:
                     state = 40
                     p = p - 1
@@ -203,7 +205,7 @@ class NIFParser:
             elif state == 29:
                 v = v + ch
                 state = 27
-                    
+            
             #-
             elif state == 30: #fw Blank Node
                 if ch == "]":
@@ -230,7 +232,26 @@ class NIFParser:
                     pass
                 else:
                     p = p -1
-                    state = 40            
+                    state = 40    
+            
+            #-
+            elif state == 60: #rt > --  COLLECTION
+                if ch == "<":
+                    state = 61
+                    u = ""
+                if ch == ")":
+                    return [predicate,L,"COLLECTION"];
+                
+            elif state == 61:
+                if ch == ">":
+                    L.append(u)
+                    u  = ""
+                    state = 60
+                    
+                    if ntext == p+1:
+                        return [predicate,L,"COLLECTION"];
+                else:
+                    u = u + ch
             
             #-
             elif state == 100: #fw text type "
@@ -277,7 +298,7 @@ class NIFParser:
         #print("-------------")
         #print("_triple:",_triple)
         #print("==>",_triple[pini:pfin])
-        #print("......")
+        #print("____")
         uri = self.getParsedListUri(_triple[pini:pfin])[0]
         
         AttrList = []
@@ -292,12 +313,12 @@ class NIFParser:
                 pini = res[0]
                 pfin = res[1]+1
                 
-                #print(_triple[pini:pfin])
+                print(_triple[pini:pfin])
                 
                 L = self.getParsePredicate_Object(_triple[pini:pfin])
                 if L != None:
                     AttrList.append(L)
-                    #print("---->",L)
+                    print("---->",L)
 
                 pos = pfin + 1
                 while pos < len(_triple) and Space(_triple[pos]):

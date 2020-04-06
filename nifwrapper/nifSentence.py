@@ -86,9 +86,12 @@ class NIFSentence:
             self.dictA[ann.uri] = pos
             pos = pos + 1
     
-    def toString(self):
+    def toString(self, passValues = None):
         ini = self.getIni()
         fin = self.getFin()
+        
+        if passValues == None:
+            passValues = {}
         
         if ini==None or fin==None:
             print("[Error]: Sentence <"+self.uri+"> with out ini/fin predicate")
@@ -100,17 +103,23 @@ class NIFSentence:
         else: s = "<"+self.uri+">" + "\n        a nif:String , nif:Context  , nif:RFC5147String ;\n"
         s = s + attr2nif(self.attr, set([]))
         s = s + "\n"
-                
-        passValues = {"nif:referenceContext":{"value":[self.uri], 'type': 'URI LIST'}}
+        
+        """
+        temp_passValues = {"nif:referenceContext":{"value":[self.uri], 'type': 'URI LIST'}}
         if self.addAlwaysPositionsToUriInSentence:
-            passValues = {"nif:referenceContext":{"value":[standarURI(self.uri, ini, fin).strip("<>")], 'type': 'URI LIST'}}
-            
+            temp_passValues = {"nif:referenceContext":{"value":[standarURI(self.uri, ini, fin).strip("<>")], 'type': 'URI LIST'}}
+        
+        
         if "nif:broaderContext" in self.attr:            
-            passValues["nif:context"] = self.attr["nif:broaderContext"]
+            temp_passValues["nif:context"] = self.attr["nif:broaderContext"]
+        """
+        
 
         for idann in self.dictA:
             index = self.dictA[idann]
-            s = s + self.annotations[index].toString(passValues)
+            newPassedValues = {"sentIni": ini, "sentFin": fin}
+            newPassedValues.update(passValues)
+            s = s + self.annotations[index].toString(newPassedValues)
             s = s + "\n"
         return s
         

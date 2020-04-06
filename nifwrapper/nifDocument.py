@@ -91,7 +91,7 @@ class NIFDocument:
         for idsent in self.dictS:
             index = self.dictS[idsent]
             self.sentences[index].addAlwaysPositionsToUriInSentence = self.addAlwaysPositionsToUriInSentence
-            s = s + self.sentences[index].toString()
+            s = s + self.sentences[index].toString({"docFin":ntext, "uridoc": self.uri})
             s = s + "\n"
             
         return s

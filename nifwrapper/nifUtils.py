@@ -26,6 +26,9 @@ def toDict(obj):
 
 
 def attr2nif(attr,except_set, passedValues=None):
+    if passedValues == None:
+        passedValues = {}
+        
     s = ""
     #print("except_set:",except_set)
     for key in attr:
@@ -39,15 +42,24 @@ def attr2nif(attr,except_set, passedValues=None):
             if a["type"] == "BN":
                 s = s + '        %s [%s] ;\n'%(key,a_value)
             elif a["type"] == "URI LIST":
-                if key in ['nif:context', 'nif:broaderContext'] and "nif:beginIndex" in attr and "nif:endIndex" in attr:
-                    ini = attr["nif:beginIndex"]["value"]
-                    fin = attr["nif:endIndex"]["value"]
-                    s = s + '        %s %s ;\n'%(key,", ".join(["<"+standarURI(x, ini, fin)+">" for x in a_value]))
+                if key in ['nif:context', 'nif:broaderContext'] and "docFin" in passedValues and "uridoc" in passedValues:
+                    
+                    print("-----------")
+                    print(passedValues["uridoc"],"-->",standarURI(passedValues["uridoc"], 0, passedValues["docFin"]))
+                    input("??")
+                    print("............")
+                    s = s + '        %s %s ;\n'%(key,", ".join([  standarURI(passedValues["uridoc"], 0, passedValues["docFin"]) for x in a_value]))
+                elif key == 'nif:referenceContext' and "sentIni" in attr and "sentFin" in passedValues:
+                    s = s + '        %s %s ;\n'%(key,", ".join([  standarURI(x, passedValues["sentIni"], passedValues["sentFin"]) for x in a_value]))
                 else: s = s + '        %s %s ;\n'%(key,", ".join(["<"+x+">" for x in a_value]))
             elif a["type"] == "TAG LIST":
                 if a_value == None or a_value == [] or a_value[0].find("nif:Phrase") != -1:
                     continue
                 s = s + '        %s %s ;\n'%(key,", ".join(a_value))
+            elif a["type"] == "COLLECTION":
+                if a_value == None or a_value == [] or a_value[0].find("nif:Phrase") != -1:
+                    continue
+                s = s + '        %s (%s) ;\n'%(key," ".join(["<"+y+">" for y in a_value]))
             elif a["type"] == "xsd:nonNegativeInteger":
                 s = s + '        %s "%s"^^%s ;\n'%(key,a_value,a["type"])
             else:
