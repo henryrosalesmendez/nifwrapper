@@ -468,8 +468,8 @@ class NIFParser:
         
         [pini,pfin] = self.newChunk(_triple,0,";")
         pfin = pfin + 1
-        print("-------------")
-        print("_triple:",_triple)
+        #print("-------------")
+        #print("_triple:",_triple)
         #print("==>",_triple[pini:pfin])
         #print("____")
         uri = self.getParsedListUri(_triple[pini:pfin])[0]
@@ -486,7 +486,7 @@ class NIFParser:
                 pini = res[0]
                 pfin = res[1]+1
                 
-                print("=>",_triple[pini:pfin])
+                #print("=>",_triple[pini:pfin])
                 
                 L = self.getParsePredicate_Object(_triple[pini:pfin])
                 if L != None:
@@ -525,8 +525,8 @@ class NIFParser:
                     
             #elif triple.find("nif:Phrase") != -1  or  triple.find("anchorOf") != -1:
             elif triple.find("itsrdf:taIdentRef") != -1 or triple.find("nif:Phrase")!= -1:
-                print("ANNOTATION ===================================")
-                print(triple)
+                #print("ANNOTATION ===================================")
+                #print(triple)
                 
                 ann = self.parseTriple(triple)
                 if ann["uri"] in self.A:
