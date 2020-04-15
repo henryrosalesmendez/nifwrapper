@@ -87,6 +87,177 @@ class NIFParser:
             #print(sys.exc_info()[0])
             if (self.showWarnings == True):
                 print("[Error] trying to store @prefix")
+                
+                
+    #------------
+    
+    def parseCandidates(self, parent_predicate, text_):
+        """
+        Parsing candidates information, e.g., for the text:
+        
+        [rdf:value (<http://exp.orga1> <http://exp.orga1>); exnif:source <http://a> ; exnif:orden 1],
+                                [rdf:value (<http://exp.orgb1> <http://exp.orgb2>); exnif:source "Babelfy" ; exnif:orden 1] ;
+        
+        this parser will return,
+        
+        ['exnif:sortedCandidates', [
+                {'source': 'http://a', 'listCandidates': ['http://exp.orga1', 'http://exp.orga1'], 'type_model_uri':URI}, 
+                {'source': 'Babelfy', 'listCandidates': ['http://exp.orgb1', 'http://exp.orgb2'], 'type_model_uri': String}], 
+                    'CANDIDATES']
+        """
+        state_ = -1
+        p_ = 0
+        ntext_ = len(text_)
+        
+        predicate_ = ""
+        source_ = ""
+        type_model_uri = ""
+        L_ = []
+        v_  = ""
+        FinalL_ = []
+        
+        while p_<ntext_:
+            ch_ = text_[p_]
+            #print(p_,ch_,state_, "pred:",predicate_, " val:", v_)
+            
+            if state_ == -1:
+                if notSpace(ch_):
+                    if ch_ == "[":
+                        state_ = 0
+            
+            elif state_ == 0:
+                if ch_ == "]":
+                    state_ = -1
+                    FinalL_.append({"source": source_, "listCandidates": L_, "type_model_uri": type_model_uri})
+                    source_ = ""
+                    L_ = []
+                    
+                elif ch_ == ";":
+                    pass
+                elif ch_ == ".":
+                    return [parent_predicate, text_.strip(" [];"), "BN"]
+                elif notSpace(ch_): # fw chr
+                    state_ = 1
+                    p_ = p_ -1
+
+            elif state_ == 1: # fw chr - predicate_
+                if notSpace(ch_):
+                    if ch_ == "]":
+                        state_ = 0
+                        p_ = p_ -1
+                        predicate_ = ""
+                    else: predicate_ = predicate_ + ch_
+                else:                
+                    if predicate_ == "rdf:value":                    
+                        state_ = 2
+                    elif predicate_ == "exnif:source":
+                        state_ = 10
+                    predicate_ = ""
+            #----------------------------------------------------------
+            # rdf:value
+            elif state_ == 2: #fw a list of URI (<http://exp.orga1> ..) 
+                if notSpace(ch_):
+                    if ch_ == "(":
+                        state_ = 3
+                    else:
+                        return [parent_predicate, text_.strip(" [];"), "BN"]
+            
+            elif state_== 3: #fw <
+                if notSpace(ch_):
+                    if ch_ == "<":
+                        state_ = 4
+                        v_ = ""
+                    elif ch_ == ")":
+                        state_ = 0
+                    else:
+                        return [parent_predicate, text_.strip(" [];"), "BN"]
+            
+            elif state_ == 4: #fw  URI >
+                if notSpace(ch_):
+                    state_ = 5
+                    p_ = p_ -1
+                    
+            elif state_ == 5:
+                if Space(ch_):
+                    return [parent_predicate, text_.strip(" [];"), "BN"]
+                elif ch_ == ">":
+                    L_.append(v_)
+                    v_ = ""
+                    state_ = 3
+                else:
+                    v_ = v_ + ch_
+            
+            
+            #-----------------------------------------------
+            # exnif:source
+            elif state_ == 10: # fw  <URI> or "Text"
+                if notSpace(ch_):
+                    if ch_ == "<":
+                        state_ = 11
+                        type_model_uri = "URI"
+                        v_ = ""
+                    elif ch_ == '"':
+                        state_ = 13
+                        type_model_uri = "String"
+                    else:
+                        return [parent_predicate, text_.strip(" [];"), "BN"]
+                    
+            elif state_ == 11: #fw no space
+                if notSpace(ch_):
+                    state_ = 12
+                    p_ = p_ -1
+                    
+            elif state_ == 12: #fw URI>
+                if Space(ch_):
+                    return [parent_predicate, text_.strip(" [];"), "BN"]
+                elif ch_ == ">":
+                    source_ = v_
+                    v_ = ""
+                    state_ = 0
+                else:
+                    v_ = v_ + ch_
+                    
+            elif state_ == 13: #fw text" or ""text"""
+                if ch_ == '"': # fw triple " string e.g. """Babelfy"""
+                    state_ = 15
+                else:
+                    state_ = 14
+                    v_ = ch_
+                    
+            elif state_ == 14:  #fw text"
+                if ch_ == '"':
+                    source_ = v_
+                    v_ = ""
+                    state_ = 0
+                else:
+                    v_ = v_ + ch_
+                
+            elif state_ == 15:
+                if ch_ != '"':
+                    return [parent_predicate, text_.strip(" [];"), "BN"]
+                else:
+                    state_ = 16
+                    
+            elif state_ == 16: #fw first letter of the value
+                if ch_ != '"':
+                    state_ = 17
+                    v_ = ch_
+            
+            elif state_ == 17:
+                if ch_ == '"':
+                    source_ = v_
+                    v_ = ""
+                    state_ = 0
+                else:
+                    v_ = v_ + ch_
+
+            p_ = p_ + 1
+            
+        if len(FinalL_):
+            return [parent_predicate, FinalL_, "CANDIDATES"]
+        
+        return [parent_predicate, text_.strip(" [];"), "BN"]
+        
     
     #------------
     def getParsePredicate_Object(self,text):
@@ -116,6 +287,8 @@ class NIFParser:
                 if notSpace(ch):
                     predicate = predicate + ch
                 else:
+                    if predicate == "exnif:sortedCandidates":
+                        return self.parseCandidates(predicate, text[p:])
                     state = 2
             elif state == 2: # fw not \s
                 if notSpace(ch):
@@ -295,8 +468,8 @@ class NIFParser:
         
         [pini,pfin] = self.newChunk(_triple,0,";")
         pfin = pfin + 1
-        #print("-------------")
-        #print("_triple:",_triple)
+        print("-------------")
+        print("_triple:",_triple)
         #print("==>",_triple[pini:pfin])
         #print("____")
         uri = self.getParsedListUri(_triple[pini:pfin])[0]
@@ -313,7 +486,7 @@ class NIFParser:
                 pini = res[0]
                 pfin = res[1]+1
                 
-                #print(_triple[pini:pfin])
+                print("=>",_triple[pini:pfin])
                 
                 L = self.getParsePredicate_Object(_triple[pini:pfin])
                 if L != None:
@@ -352,8 +525,8 @@ class NIFParser:
                     
             #elif triple.find("nif:Phrase") != -1  or  triple.find("anchorOf") != -1:
             elif triple.find("itsrdf:taIdentRef") != -1 or triple.find("nif:Phrase")!= -1:
-                #print("ANNOTATION ===================================")
-                #print(triple)
+                print("ANNOTATION ===================================")
+                print(triple)
                 
                 ann = self.parseTriple(triple)
                 if ann["uri"] in self.A:

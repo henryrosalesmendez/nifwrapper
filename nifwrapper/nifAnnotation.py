@@ -30,6 +30,19 @@ class NIFAnnotation:
         self.attr[_name] = {}
         self.attr[_name]["value"] = _value
         self.attr[_name]["type"] = _type
+        
+    def updateAttribute(self, _name,_value,_type):
+        """
+        Only for candidates that a list as a value
+        """
+        if not _name in self.attr:
+            self.attr[_name] = {}
+            self.attr[_name]["value"] = _value
+            self.attr[_name]["type"] = _type
+        else:
+            self.attr[_name]["value"] = self.attr[_name]["value"] + _value
+        
+        
     
     def getAttribute(self,_name):
         if _name in self.attr:
@@ -67,6 +80,11 @@ class NIFAnnotation:
         s = s + attr2nif(self.attr, set([]), passedValues)
         
         return s
+    
+    
+    
+        
+        
 
         
          

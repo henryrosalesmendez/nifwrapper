@@ -56,6 +56,20 @@ def attr2nif(attr,except_set, passedValues=None):
                 s = s + '        %s (%s) ;\n'%(key," ".join(["<"+y+">" for y in a_value]))
             elif a["type"] == "xsd:nonNegativeInteger":
                 s = s + '        %s "%s"^^%s ;\n'%(key,a_value,a["type"])
+            elif a["type"] == "CANDIDATES":
+                cands = []
+                for _v in a_value:
+                    candidates_uris = " ".join(["<"+tt+">" for tt in  _v["listCandidates"]])
+                    candidates_source = ""
+                    if _v["type_model_uri"] == "URI":
+                        candidates_source = "<"+_v["source"]+">"
+                    else:candidates_source = '"'+_v["source"]+'"'
+                    
+                    cands.append("[rdf:value (%s); exnif:source %s]" % (candidates_uris, candidates_source))
+                    
+                changeLine = " ,\n                               "
+                s = s + '        %s %s ;\n'%(key,changeLine.join(cands))
+
             else:
                 s = s + '        %s """%s"""^^%s ;\n'%(key,a_value,a["type"])
     
@@ -85,7 +99,6 @@ def getFinFromUri(uri):
         [ini,fin] = L[1].split(",")
         return ini
     return None
-
 
 
 
