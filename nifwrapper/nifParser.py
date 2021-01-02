@@ -496,6 +496,9 @@ class NIFParser:
                 while pos < len(_triple) and Space(_triple[pos]):
                     pos = pos + 1
             else: break;
+        #print("//////////////////////////////////////////")
+        #print("----------------> returning:", {"attr":AttrList, "uri":uri})
+        #print("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\a")
         return {"attr":AttrList, "uri":uri}
         
         
@@ -517,7 +520,7 @@ class NIFParser:
                 #print("---------\n",doc)
                 if doc["uri"] in self.D:
                     if (self.showWarnings == True):
-                        print("[Error] The document "+doc["uri"]+" is duplucated.")
+                        print("[Error] The document "+doc["uri"]+" is duplicated.")
                 else:
                     doc["index"] = self.iddoc
                     self.iddoc = self.iddoc + 1                    
@@ -529,9 +532,11 @@ class NIFParser:
                 #print(triple)
                 
                 ann = self.parseTriple(triple)
+                #print("------")
+                #print(ann)
                 if ann["uri"] in self.A:
                     if (self.showWarnings == True):
-                        print("[Error] The annotation "+ann["uri"]+" is duplucated.")
+                        print("[Error] The annotation "+ann["uri"]+" is duplicated.")
                     if (self.avoidR == False):
                         cc = 1
                         
@@ -561,7 +566,7 @@ class NIFParser:
                 sent = self.parseTriple(triple)
                 if sent["uri"] in self.S:
                     if (self.showWarnings == True):
-                        print("[Error] The document "+sent["uri"]+" is duplucated.")
+                        print("[Error] The document "+sent["uri"]+" is duplicated.")
                 else:
                     self.S[sent["uri"]] = toDict(sent)
 

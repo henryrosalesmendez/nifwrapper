@@ -122,6 +122,18 @@ class NIFDocument:
         return D
     
     
+    ##
+    ##
+    ##  Return the list of all the annotations of this document
+    def getAllAnnotations(self):
+        A = []
+        for sent in self.sentences:
+            for ann in sent.annotations:
+                A.append(ann)
+        return A
+            
+    
+    
     
     
         

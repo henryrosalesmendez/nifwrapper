@@ -13,10 +13,14 @@ class NIFAnnotation:
     def __init__(self):
         self.attr = {}  # other attributes -- {"attrNam1":  {  "value": "val" , "type":"xsd:string"    } , ...        }
         self.uri = ""
+        self.addAlwaysPositionsToUriInSentence = True
+        self.sentenceIniFin = []
     
     def __init__(self, _uri = None,_ini=None, _fin=None, _uriList=None, _tag=None):
         self.attr = {}  # other attributes -- {"attrNam1":  {  "value": "val" , "type":"xsd:string"    } , ...        }
         self.uri = ""
+        self.addAlwaysPositionsToUriInSentence = True
+        self.sentenceIniFin = []
         if _uri!=None:   self.uri = _uri        
         if _ini!=None:    self.addAttribute("nif:beginIndex",_ini,"xsd:nonNegativeInteger")
         if _fin!=None:   self.addAttribute("nif:endIndex",_fin,"xsd:nonNegativeInteger")
@@ -77,7 +81,16 @@ class NIFAnnotation:
             return ""
         
         s = standarURI(self.uri, ini, fin) + "\n        a nif:String , nif:Context , nif:Phrase , nif:RFC5147String ;\n"   
-        s = s + attr2nif(self.attr, set([]), passedValues)
+        attr_ = self.attr
+        if self.addAlwaysPositionsToUriInSentence:            
+            if "nif:referenceContext" in attr_:
+                if len(self.sentenceIniFin) == 2:
+                    attr_["nif:referenceContext"]["value"][0] = standarURI(attr_["nif:referenceContext"]["value"][0], self.sentenceIniFin[0], self.sentenceIniFin[1]).strip("><")
+        else:
+            if "nif:referenceContext" in attr_:
+                attr_["nif:referenceContext"]["value"][0] = attr_["nif:referenceContext"]["value"][0].strip("<>").split("#")[0]
+        
+        s = s + attr2nif(attr_, set([]), passedValues)
         
         return s
     
