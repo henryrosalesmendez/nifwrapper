@@ -479,9 +479,11 @@ class NIFWrapper:
                 _ini = l["ini"]
                 _fin = l["fin"]
                 _label = l["label"]
+
                 
                 pcoref = self.findSentencesInDocumentByAnyPosition(docuri, coref["start"])
                 presolv = self.findSentencesInDocumentByAnyPosition(docuri, _ini)
+
                 
                 if pcoref!=-1 and presolv !=-1:
                     
@@ -490,6 +492,7 @@ class NIFWrapper:
 
                     p_a_coref = s_coref.findByPosition(coref["start"] - int(s_coref.getIni()), coref["end"] - int(s_coref.getIni()))
                     p_a_resolv = s_resolv.findByPosition(_ini - int(s_resolv.getIni()), _fin - int(s_resolv.getIni()))
+                    
                     
                     if p_a_coref == -1 and p_a_resolv != -1:
                         
@@ -679,5 +682,5 @@ class NIFWrapper:
                 self.documents[di].sentences[si].dictA = tempDictA
         
 
-
-
+    
+    

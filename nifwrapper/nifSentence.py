@@ -102,9 +102,11 @@ class NIFSentence:
         if self.addAlwaysPositionsToUriInSentence:
             s = standarURI(self.uri, ini, fin) + "\n        a nif:String , nif:Context  , nif:RFC5147String ;\n" 
         else: 
+            self.uri = self.uri.split("#")[0] 
+            
+            if "idsent" in passValues:
+                self.uri = self.uri + "_sentence"+ str(passValues["index_sent"])
             s = "<"+self.uri+">" + "\n        a nif:String , nif:Context  , nif:RFC5147String ;\n"
-            
-            
         
         
         s = s + attr2nif(self.attr, set([]))
@@ -123,7 +125,7 @@ class NIFSentence:
 
         for idann in self.dictA:
             index = self.dictA[idann]
-            newPassedValues = {"sentIni": ini, "sentFin": fin}
+            newPassedValues = {"sentIni": ini, "sentFin": fin, "sentUri": self.uri}
             newPassedValues.update(passValues)
             self.annotations[index].addAlwaysPositionsToUriInSentence = self.addAlwaysPositionsToUriInSentence
             self.annotations[index].sentenceIniFin = [ini, fin]

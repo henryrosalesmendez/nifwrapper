@@ -88,10 +88,10 @@ class NIFDocument:
         s = s + attr2nif(self.attr, set(["nif:isString"]))
         s = s + "\n"
         
-        for idsent in self.dictS:
+        for index_sent, idsent in enumerate(self.dictS):
             index = self.dictS[idsent]
             self.sentences[index].addAlwaysPositionsToUriInSentence = self.addAlwaysPositionsToUriInSentence
-            s = s + self.sentences[index].toString({"docFin":ntext, "uridoc": self.uri})
+            s = s + self.sentences[index].toString({"docFin":ntext, "uridoc": self.uri, "index_sent":index_sent})
             s = s + "\n"
             
         return s

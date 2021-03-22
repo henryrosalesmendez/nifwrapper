@@ -53,6 +53,9 @@ class NIFAnnotation:
             return self.attr[_name]["value"]
         return None
     
+    def removeAttribute(self,_name):
+        del self.attr[_name]
+    
     def getUri(self):
         return self.uri;
         
